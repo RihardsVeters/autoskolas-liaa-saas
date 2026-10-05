@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autoskolas SaaS · Klikšķināms prototips</title>
+<style>
+  :root{
+    --ink:#15181b; --ink-soft:#5b636a; --ink-faint:#8b9299;
+    --paper:#f4f1ea; --surface:#ffffff; --surface-2:#faf8f3;
+    --line:#e6e1d6; --line-soft:#efebe2;
+    --brand:#0f766e; --brand-d:#0b5a53; --brand-l:#d7efec;
+    --accent:#e8863b; --accent-l:#fcecd9;
+    --good:#1f9d55; --star:#f0a92b; --danger:#c7483b;
+    --r:16px; --r-s:11px;
+    --shadow:0 1px 2px rgba(21,24,27,.05), 0 12px 32px -16px rgba(21,24,27,.18);
+    --shadow-s:0 1px 2px rgba(21,24,27,.06), 0 4px 14px -8px rgba(21,24,27,.14);
+    --sans:'Avenir Next','Avenir','Segoe UI',system-ui,-apple-system,sans-serif;
+    --mono:'SF Mono','JetBrains Mono',ui-monospace,'Menlo',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);
+    -webkit-font-smoothing:antialiased;line-height:1.5;overflow-x:hidden}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,textarea,select{font-family:inherit;font-size:inherit}
+  a{color:inherit}
+  ::selection{background:var(--brand-l)}
+
+  /* ---------- top bar ---------- */
+  .topbar{position:sticky;top:0;z-index:40;background:rgba(244,241,234,.86);
+    backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:18px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:-.02em;font-size:18px}
+  .brand .mk{width:30px;height:30px;border-radius:9px;background:var(--brand);
+    display:grid;place-items:center;color:#fff;box-shadow:var(--shadow-s)}
+  .brand small{display:block;font-size:10px;font-weight:600;letter-spacing:.14em;
+    color:var(--brand);text-transform:uppercase;margin-top:1px}
+  .roles{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);
+    padding:4px;border-radius:999px;margin-left:6px;box-shadow:var(--shadow-s)}
+  .roles button{padding:7px 15px;border-radius:999px;font-size:13px;font-weight:600;
+    color:var(--ink-soft);white-space:nowrap;transition:.18s}
+  .roles button.on{background:var(--ink);color:#fff}
+  .topbar .spacer{flex:1}
+  .lang{display:flex;gap:2px;background:var(--surface);border:1px solid var(--line);
+    border-radius:999px;padding:3px;box-shadow:var(--shadow-s)}
+  .lang button{padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;color:var(--ink-faint)}
+  .lang button.on{background:var(--brand-l);color:var(--brand-d)}
+  .lang button:not(.on){opacity:.55}
+  .demo-tag{font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-l);
+    padding:5px 10px;border-radius:999px;letter-spacing:.03em}
+
+  .wrap{max-width:1120px;margin:0 auto;padding:28px 24px 90px}
+  .view{display:none;animation:fade .4s ease}
+  .view.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* ---------- generic ---------- */
+  .crumbs{display:flex;gap:7px;align-items:center;font-size:13px;color:var(--ink-faint);
+    margin-bottom:18px;flex-wrap:wrap}
+  .crumbs a{cursor:pointer;font-weight:600;color:var(--ink-soft)}
+  .crumbs a:hover{color:var(--brand)}
+  .crumbs .sep{opacity:.5}
+  h1.big{font-size:clamp(26px,4.3vw,42px);font-weight:800;letter-spacing:-.03em;line-height:1.05}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--brand);margin-bottom:12px}
+  .lead{font-size:17px;color:var(--ink-soft);max-width:60ch}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;
+    padding:4px 9px;border-radius:7px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-soft)}
+  .pill.cat{background:var(--brand-l);border-color:transparent;color:var(--brand-d)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:12px 20px;border-radius:12px;font-weight:700;font-size:14px;transition:.18s;
+    background:var(--ink);color:#fff;box-shadow:var(--shadow-s)}
+  .btn:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+  .btn.brand{background:var(--brand)}
+  .btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+  .btn.ghost:hover{border-color:var(--brand);color:var(--brand)}
+  .btn.sm{padding:8px 14px;font-size:13px;border-radius:10px}
+  .btn.full{width:100%}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-s)}
+  .rating{display:inline-flex;align-items:center;gap:6px;font-weight:800}
+  .rating .s{color:var(--star)}
+  .muted{color:var(--ink-faint)}
+
+  /* ---------- hero / catalog ---------- */
+  .hero{background:linear-gradient(135deg,#0f766e,#0b5a53);color:#fff;border-radius:24px;
+    padding:40px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+  .hero::after{content:"";position:absolute;right:-80px;top:-80px;width:360px;height:360px;
+    background:radial-gradient(circle,rgba(232,134,59,.42),transparent 70%)}
+  .hero .eyebrow{color:#9fe6dd}
+  .hero h1.big{color:#fff;max-width:17ch}
+  .hero .lead{color:#cfeae6;margin-top:14px}
+  .hero .stats{display:flex;gap:30px;margin-top:26px;flex-wrap:wrap;position:relative;z-index:1}
+  .hero .stats b{display:block;font-size:30px;font-weight:800;letter-spacing:-.02em}
+  .hero .stats span{font-size:12.5px;color:#bfe3de}
+  .hero .cta{margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;position:relative;z-index:1}
+  .hero .btn{background:#fff;color:var(--brand-d)}
+  .hero .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.45)}
+
+  .filters{display:flex;gap:12px;flex-wrap:wrap;margin:26px 0 18px;align-items:center}
+  .search{flex:1;min-width:220px;display:flex;align-items:center;gap:9px;background:var(--surface);
+    border:1px solid var(--line);border-radius:12px;padding:11px 15px;box-shadow:var(--shadow-s)}
+  .search input{border:none;outline:none;flex:1;background:none;font-size:14.5px}
+  .chipset{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{padding:9px 14px;border-radius:10px;font-size:13px;font-weight:600;background:var(--surface);
+    border:1px solid var(--line);color:var(--ink-soft);transition:.16s}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .grid{display:grid;gap:16px}
+  .grid.schools{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+  .school-card{padding:20px;display:flex;flex-direction:column;gap:12px;cursor:pointer;transition:.18s}
+  .school-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--brand-l)}
+  .school-card .logo{width:50px;height:50px;border-radius:13px;display:grid;place-items:center;
+    font-weight:800;color:#fff;font-size:19px;letter-spacing:-.02em}
+  .school-card h3{font-size:18px;font-weight:800;letter-spacing:-.02em}
+  .school-card .cats{display:flex;gap:5px;flex-wrap:wrap}
+  .school-card .meta{display:flex;justify-content:space-between;align-items:center;
+    border-top:1px solid var(--line-soft);padding-top:12px;margin-top:auto;font-size:13px}
+
+  /* ---------- school profile ---------- */
+  .prof-head{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;margin-bottom:24px}
+  .prof-head .logo{width:84px;height:84px;border-radius:20px;display:grid;place-items:center;
+    color:#fff;font-weight:800;font-size:34px;flex-shrink:0;box-shadow:var(--shadow-s)}
+  .prof-head .info{flex:1;min-width:260px}
+  .prof-head h1{font-size:30px;font-weight:800;letter-spacing:-.03em}
+  .prof-head .sub{color:var(--ink-soft);margin:7px 0 12px;max-width:62ch}
+  .section-title{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ink-faint);margin:34px 0 15px;display:flex;align-items:center;gap:10px}
+  .section-title::after{content:"";flex:1;height:1px;background:var(--line)}
+  .offer{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+  .offer .o{padding:18px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface)}
+  .offer .o .ic{width:38px;height:38px;border-radius:11px;background:var(--brand-l);color:var(--brand-d);
+    display:grid;place-items:center;margin-bottom:12px}
+  .offer .o h4{font-size:15.5px;font-weight:800}
+  .offer .o p{font-size:13px;color:var(--ink-soft);margin:6px 0 12px}
+  .offer .o .price{font-family:var(--mono);font-weight:700;font-size:18px}
+  .offer .o .price small{color:var(--ink-faint);font-weight:500;font-size:12px}
+
+  .instr-row{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+  .instr-card{padding:16px;display:flex;gap:14px;align-items:center;cursor:pointer;transition:.18s}
+  .instr-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--brand-l)}
+  .avatar{width:56px;height:56px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;
+    color:#fff;font-weight:800;font-size:20px;position:relative}
+  .instr-card h4{font-size:15.5px;font-weight:800}
+  .instr-card .sm{font-size:12.5px;color:var(--ink-soft)}
+
+  /* ---------- instructor profile ---------- */
+  .insdetail{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:start}
+  @media(max-width:860px){.insdetail{grid-template-columns:1fr}}
+  .gallery{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;height:260px;border-radius:var(--r);overflow:hidden}
+  .gallery .ph{position:relative;overflow:hidden}
+  .gallery .ph:first-child{grid-row:span 2}
+  .gallery svg{position:absolute;inset:0;width:100%;height:100%}
+  .langtabs{display:flex;gap:6px;margin:18px 0 10px}
+  .langtabs button{padding:6px 13px;border-radius:9px;font-size:12.5px;font-weight:700;
+    border:1px solid var(--line);background:var(--surface);color:var(--ink-faint)}
+  .langtabs button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .bio{font-size:14.5px;color:var(--ink-soft);min-height:66px}
+
+  .sched{padding:20px}
+  .sched .daytabs{display:flex;gap:5px;margin:14px 0;flex-wrap:wrap}
+  .sched .daytabs button{flex:1;min-width:44px;padding:9px 4px;border-radius:10px;font-size:12px;font-weight:700;
+    border:1px solid var(--line);background:var(--surface-2);color:var(--ink-soft);text-align:center}
+  .sched .daytabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .sched .daytabs button.we{color:var(--accent)}
+  .sched .daytabs button.we.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .sched .daytabs.dates{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+  .sched .daytabs.dates button{flex:0 0 auto;min-width:56px;line-height:1.25}
+  .slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .slot{padding:11px 4px;border-radius:10px;border:1px solid var(--line);background:var(--surface);
+    font-weight:700;font-size:13.5px;text-align:center;transition:.14s}
+  .slot:hover{border-color:var(--brand);color:var(--brand)}
+  .slot.off{opacity:.3;text-decoration:line-through;cursor:not-allowed}
+  .priceline{display:flex;justify-content:space-between;align-items:center;margin:16px 0;
+    padding:14px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line-soft)}
+  .priceline .p{font-family:var(--mono);font-weight:800;font-size:22px}
+
+  .reviews{margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px;align-items:start}
+  .review{padding:16px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface)}
+  .review .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+  .review .who{display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px}
+  .review .mini{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:800}
+  .review p{font-size:14px;color:var(--ink-soft)}
+  .review .verif{font-size:11px;font-weight:700;color:var(--good);display:inline-flex;align-items:center;gap:4px}
+  .review .reply{margin-top:11px;padding:12px 14px;border-radius:11px;background:var(--brand-l);
+    border-left:3px solid var(--brand);font-size:13.5px}
+  .review .reply b{color:var(--brand-d);display:block;font-size:12px;margin-bottom:3px}
+
+  /* ---------- cabinets ---------- */
+  .cab-head{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+  .cab-head .av{width:60px;height:60px;border-radius:16px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:24px}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:22px 0 24px;overflow-x:auto}
+  .tabs button{padding:11px 16px;font-size:14px;font-weight:700;color:var(--ink-faint);
+    border-bottom:2px solid transparent;white-space:nowrap}
+  .tabs button.on{color:var(--ink);border-color:var(--brand)}
+  .panel{display:none}.panel.on{display:block;animation:fade .3s}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:24px}
+  .kpi{padding:18px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line)}
+  .kpi b{font-size:28px;font-weight:800;letter-spacing:-.02em;display:block}
+  .kpi .t{font-size:12.5px;color:var(--ink-faint);font-weight:600}
+  .kpi .d{font-size:12px;font-weight:700;margin-top:5px}
+  .kpi .d.up{color:var(--good)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{text-align:left;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);
+    font-weight:700;padding:11px 14px;border-bottom:1px solid var(--line)}
+  td{padding:13px 14px;border-bottom:1px solid var(--line-soft)}
+  tr:last-child td{border-bottom:none}
+  .tbl-wrap{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+  .tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:7px}
+  .tag.on{background:var(--brand-l);color:var(--brand-d)}
+  .tag.off{background:#f0ece2;color:var(--ink-faint)}
+  .tag.adm{background:var(--accent-l);color:#9a5a1d}
+
+  .avgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+  .avcell{text-align:center}
+  .avcell .lbl{font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:8px}
+  .avcell .sl{display:flex;flex-direction:column;gap:6px}
+  .avtog{padding:8px;border-radius:9px;font-size:12.5px;font-weight:700;border:1px solid var(--line);
+    background:var(--surface);color:var(--ink-faint);transition:.14s}
+  .avtog.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-bottom:6px}
+  .field input,.field textarea,.field select{width:100%;padding:11px 13px;border:1px solid var(--line);
+    border-radius:11px;outline:none;background:var(--surface);font-size:14px;transition:.14s}
+  .field input:focus,.field textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-l)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .prod-toggle{display:flex;justify-content:space-between;align-items:center;padding:15px;
+    border:1px solid var(--line);border-radius:var(--r);background:var(--surface);margin-bottom:10px}
+  .switch{width:44px;height:25px;border-radius:999px;background:#dcd7cb;position:relative;transition:.2s;flex-shrink:0}
+  .switch.on{background:var(--brand)}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;
+    background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .switch.on::after{left:22px}
+
+  /* ---------- booking modal ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(21,24,27,.5);backdrop-filter:blur(3px);
+    z-index:80;display:none;align-items:center;justify-content:center;padding:20px;animation:fade .25s}
+  .overlay.on{display:flex}
+  .modal{background:var(--surface);border-radius:22px;max-width:440px;width:100%;padding:28px;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.45);max-height:90vh;overflow:auto}
+  .modal h3{font-size:21px;font-weight:800;letter-spacing:-.02em}
+  .modal .close{position:absolute;top:16px;right:18px;font-size:22px;color:var(--ink-faint)}
+  .step{display:none}.step.on{display:block;animation:fade .3s}
+  .smartid{text-align:center;padding:10px 0}
+  .smartid .code{font-family:var(--mono);font-size:40px;font-weight:800;letter-spacing:.1em;
+    color:var(--brand);margin:16px 0}
+  .spinner{width:46px;height:46px;border:4px solid var(--brand-l);border-top-color:var(--brand);
+    border-radius:50%;margin:18px auto;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .success-ic{width:64px;height:64px;border-radius:50%;background:var(--good);color:#fff;
+    display:grid;place-items:center;margin:4px auto 16px;font-size:30px;animation:pop .4s}
+  @keyframes pop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
+  .starpick{display:flex;gap:6px;justify-content:center;margin:14px 0;font-size:34px}
+  .starpick span{cursor:pointer;color:#dcd7cb;transition:.1s}
+  .starpick span.on{color:var(--star)}
+  .confrow{display:flex;justify-content:space-between;padding:9px 0;font-size:14px;border-bottom:1px solid var(--line-soft)}
+  .confrow b{font-weight:700}
+
+  /* ---------- AI chat ---------- */
+  .ai-fab{position:fixed;right:22px;bottom:22px;z-index:60;display:flex;align-items:center;gap:10px;
+    padding:13px 20px 13px 15px;border-radius:999px;background:var(--ink);color:#fff;font-weight:700;
+    font-size:14px;box-shadow:0 12px 30px -8px rgba(0,0,0,.4);transition:.2s}
+  .ai-fab:hover{transform:translateY(-2px)}
+  .ai-fab .d{width:9px;height:9px;border-radius:50%;background:#49e3a8;box-shadow:0 0 0 4px rgba(73,227,168,.25)}
+  .ai-panel{position:fixed;right:0;top:0;bottom:0;width:min(420px,100%);background:var(--surface);
+    z-index:90;box-shadow:-20px 0 60px -20px rgba(0,0,0,.3);transform:translateX(100%);
+    transition:.32s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+  .ai-panel.on{transform:none}
+  .ai-top{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+  .ai-top .bot{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#0f766e,#14b8a6);
+    display:grid;place-items:center;color:#fff}
+  .ai-top h4{font-size:15px;font-weight:800}
+  .ai-top .st{font-size:11.5px;color:var(--good);font-weight:700}
+  .ai-top .x{margin-left:auto;font-size:24px;color:var(--ink-faint)}
+  .ai-body{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;background:var(--surface-2)}
+  .msg{max-width:88%;padding:12px 15px;border-radius:16px;font-size:14px;line-height:1.5;animation:fade .3s}
+  .msg.user{align-self:flex-end;background:var(--ink);color:#fff;border-bottom-right-radius:5px}
+  .msg.bot{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:5px}
+  .msg.bot b{color:var(--brand-d)}
+  .ai-ins{margin-top:10px;border:1px solid var(--line);border-radius:12px;padding:11px 13px;background:var(--surface-2);
+    display:flex;align-items:center;gap:11px}
+  .ai-ins .mini{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;flex-shrink:0}
+  .ai-ins h5{font-size:13.5px;font-weight:800}
+  .ai-ins .sm{font-size:11.5px;color:var(--ink-soft)}
+  .ai-ins .bk{margin-left:auto;padding:7px 12px;border-radius:9px;background:var(--brand);color:#fff;font-size:12px;font-weight:700}
+  .ai-sugg{display:flex;gap:7px;flex-wrap:wrap;padding:0 20px 12px;background:var(--surface-2)}
+  .ai-sugg button{font-size:12px;font-weight:600;padding:8px 12px;border-radius:999px;
+    border:1px solid var(--line);background:var(--surface);color:var(--ink-soft)}
+  .ai-sugg button:hover{border-color:var(--brand);color:var(--brand)}
+  .ai-input{padding:14px 16px;border-top:1px solid var(--line);display:flex;gap:9px}
+  .ai-input input{flex:1;padding:12px 15px;border:1px solid var(--line);border-radius:12px;outline:none;font-size:14px}
+  .ai-input button{width:44px;border-radius:12px;background:var(--brand);color:#fff;display:grid;place-items:center}
+  .typing{display:flex;gap:4px;padding:14px 15px}
+  .typing span{width:7px;height:7px;border-radius:50%;background:var(--ink-faint);animation:bob 1s infinite}
+  .typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+  @keyframes bob{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+
+  .note{font-size:12.5px;color:var(--ink-faint);background:var(--surface-2);border:1px dashed var(--line);
+    border-radius:11px;padding:10px 13px;margin-top:14px}
+  @media(max-width:620px){.wrap{padding:20px 15px 90px}.hero{padding:26px}.row2{grid-template-columns:1fr}.walletgrid{grid-template-columns:1fr!important}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="mk">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M6.5 17l1.2-5a3 3 0 0 1 2.9-2.2h2.8a3 3 0 0 1 2.9 2.2l1.2 5"/><circle cx="8" cy="17" r="1.6"/><circle cx="16" cy="17" r="1.6"/></svg>
+    </span>
+    <span>Autoskolas<small>SaaS platforma</small></span>
+  </div>
+  <div class="roles" id="roles">
+    <button class="on" data-role="public" onclick="setRole('public')">Publiskais skats</button>
+    <button data-role="user" onclick="setRole('user')">Lietotāja panelis</button>
+    <button data-role="instr" onclick="setRole('instr')">Instruktora kabinets</button>
+    <button data-role="admin" onclick="setRole('admin')">Autoskolas kabinets</button>
+  </div>
+  <div class="spacer"></div>
+  <span class="demo-tag">DEMO prototips</span>
+  <div class="lang" id="langSwitch">
+    <button class="on" onclick="setLang('lv')">LV</button><button onclick="setLang('en')">EN</button><button onclick="setLang('ru')">RU</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ CATALOG ============ -->
+  <div class="view on" id="view-catalog">
+    <div class="tabs" style="margin-top:0;margin-bottom:20px">
+      <button class="on" onclick="goCatalog()">Autoskolas</button>
+      <button onclick="goInstructors()">Instruktori</button>
+    </div>
+    <div class="hero">
+      <div class="eyebrow">Vienota platforma 200 autoskolām</div>
+      <h1 class="big">Modernas IT iespējas arī mazajām autoskolām</h1>
+      <p class="lead">CRM, attālināta līgumu slēgšana, elektroniska braukšanas grafiku organizācija un mācību rīki — pieejami kā abonements, bez sava IT budžeta.</p>
+      <div class="stats">
+        <div><b>200</b><span>autoskolas Latvijā</span></div>
+        <div><b>5</b><span>ar savu IT sistēmu</span></div>
+        <div><b>97.5%</b><span>potenciālais tirgus</span></div>
+      </div>
+      <div class="cta">
+        <button class="btn" onclick="setRole('admin')">Izveidot autoskolas profilu</button>
+        <button class="btn ghost" onclick="openAI()">Pamēģināt AI čatu</button>
+      </div>
+    </div>
+
+    <div class="filters">
+      <div class="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b9299" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" placeholder="Meklēt autoskolu vai pilsētu…" oninput="renderSchools()">
+      </div>
+      <div class="chipset" id="catChips"></div>
+    </div>
+    <div class="grid schools" id="schoolGrid"></div>
+    <p class="note">Demo: rāda reālas autoskolas no autoskolas.com kataloga. Katrai ir publisks profils ar piedāvājumu un instruktoriem.</p>
+  </div>
+
+  <!-- ============ SCHOOL PROFILE ============ -->
+  <div class="view" id="view-school">
+    <div class="crumbs"><a onclick="goCatalog()">Autoskolas</a><span class="sep">›</span><span id="sch-crumb"></span></div>
+    <div class="prof-head">
+      <div class="logo" id="sch-logo"></div>
+      <div class="info">
+        <h1 id="sch-name"></h1>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:8px 0">
+          <span class="rating"><span class="s">★</span><span id="sch-rate"></span></span>
+          <span class="muted" id="sch-votes"></span>
+          <span class="pill" id="sch-city"></span>
+        </div>
+        <p class="sub" id="sch-desc"></p>
+        <div class="cats" id="sch-cats" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      </div>
+      <button class="btn brand" onclick="openAI()">Jautāt AI asistentam</button>
+    </div>
+
+    <div class="section-title">Piedāvājums pa kategorijām</div>
+    <div class="offer" id="sch-offer"></div>
+
+    <div class="section-title">Instruktori</div>
+    <div class="instr-row" id="sch-instr"></div>
+  </div>
+
+  <!-- ============ INSTRUCTOR PROFILE ============ -->
+  <div class="view" id="view-instr">
+    <div class="crumbs"><a onclick="goCatalog()">Autoskolas</a><span class="sep">›</span><a id="ins-crumb-sch" onclick="openSchool(currentSchool.id)"></a><span class="sep">›</span><span id="ins-crumb"></span></div>
+    <div class="insdetail">
+      <div>
+        <div class="gallery" id="ins-gallery"></div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:18px">
+          <div class="avatar" id="ins-av" style="width:64px;height:64px;font-size:24px"></div>
+          <div>
+            <h1 style="font-size:26px;font-weight:800;letter-spacing:-.02em" id="ins-name"></h1>
+            <div class="muted" id="ins-sub" style="font-size:14px"></div>
+          </div>
+        </div>
+        <div class="langtabs" id="ins-langtabs">
+          <button class="on" onclick="setBio('lv',this)">LV</button>
+          <button onclick="setBio('en',this)">EN</button>
+          <button onclick="setBio('ru',this)">RU</button>
+        </div>
+        <p class="bio" id="ins-bio"></p>
+      </div>
+
+      <div>
+        <div class="sched card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <b style="font-size:16px">Braukšanas grafiks</b>
+            <span class="pill cat" id="ins-cat-pill"></span>
+          </div>
+          <div class="muted" style="font-size:12px;margin:10px 0 2px">Izvēlies dienu</div>
+          <div class="daytabs dates" id="ins-days"></div>
+          <div class="slots" id="ins-slots"></div>
+          <div class="priceline">
+            <div><div class="muted" style="font-size:12px">Cena / 90 min</div><div class="p" id="ins-price"></div></div>
+            <div style="text-align:right"><div class="muted" style="font-size:12px" id="ins-daytype"></div></div>
+          </div>
+          <p class="muted" style="font-size:12.5px;margin-bottom:12px">Darbdienās un brīvdienās atsevišķa cena — kā Presto sistēmā.</p>
+          <button class="btn brand full" onclick="startBooking()">Rezervēt nodarbību</button>
+          <p class="note">Rezervācijai nepieciešama autorizācija ar Smart-ID.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Atsauksmes par darījumiem</div>
+    <div class="reviews" id="ins-reviews"></div>
+  </div>
+
+  <!-- ============ INSTRUCTOR CABINET ============ -->
+  <div class="view" id="view-instr-cab">
+    <div class="cab-head">
+      <div class="av" style="background:linear-gradient(135deg,#0f766e,#14b8a6)">JK</div>
+      <div>
+        <h1 style="font-size:24px;font-weight:800;letter-spacing:-.02em">Jānis Kalniņš</h1>
+        <div class="muted" style="font-size:14px">Instruktors · Presto Autoskola · B, BE kategorija</div>
+      </div>
+      <button class="btn ghost sm" style="margin-left:auto" onclick="viewInstructor('jkalnins','presto')">Skatīt publisko profilu →</button>
+    </div>
+    <div class="tabs" id="icTabs">
+      <button class="on" onclick="icTab(0,this)">Grafiks un cenas</button>
+      <button onclick="icTab(1,this)">Nodarbības un kursanti</button>
+      <button onclick="icTab(2,this)">Norēķini</button>
+      <button onclick="icTab(3,this)">Atsauksmes</button>
+      <button onclick="icTab(4,this)">Publiskais profils</button>
+    </div>
+
+    <div class="panel on" id="icp0">
+      <div class="kpis">
+        <div class="kpi"><div class="t">Šonedēļ rezervēts</div><b>14</b><div class="d up">+3 pret pagājušo</div></div>
+        <div class="kpi"><div class="t">Brīvie laiki</div><b>9</b><div class="d">nākamajās 7 dienās</div></div>
+        <div class="kpi"><div class="t">Vidējais vērtējums</div><b>4.9 ★</b><div class="d">38 atsauksmes</div></div>
+        <div class="kpi"><div class="t">Ieņēmumi (mēn.)</div><b>€1 820</b><div class="d up">+12%</div></div>
+      </div>
+      <div class="row2" style="margin-bottom:16px;max-width:420px">
+        <div class="field"><label>Cena darbdienās (€ / 90 min)</label><input value="22" type="number"></div>
+        <div class="field"><label>Cena brīvdienās (€ / 90 min)</label><input value="28" type="number"></div>
+      </div>
+      <div class="card" style="padding:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+          <div><b style="font-size:16px">Mans nodarbību grafiks</b>
+            <div class="muted" style="font-size:12.5px">Pievieno konkrētas dienas un laikus, kad esi pieejams. Katra diena var atšķirties.</div></div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="date" id="newDay" style="padding:8px 10px;border:1px solid var(--line);border-radius:9px">
+            <button class="btn ghost sm" onclick="addCustomDate()">+ Pievienot dienu</button>
+          </div>
+        </div>
+        <div class="muted" style="font-size:12px;margin-top:12px;display:flex;gap:16px;flex-wrap:wrap">
+          <span>🔒 Aizņemts — rezervēta nodarbība (× lai atceltu)</span><span>Pārējie — tavi brīvie laiki</span>
+        </div>
+        <div id="schedBuilder" style="margin-top:10px"></div>
+        <button class="btn brand sm" style="margin-top:16px" onclick="toast('Grafiks saglabāts')">Saglabāt grafiku</button>
+      </div>
+    </div>
+
+    <div class="panel" id="icp1">
+      <div class="kpis">
+        <div class="kpi"><div class="t">Aktīvie kursanti</div><b id="st-count">4</b><div class="d">pašlaik apmācībā</div></div>
+        <div class="kpi"><div class="t">Pavadītās nodarbības</div><b>126</b><div class="d up">+14 šomēnes</div></div>
+        <div class="kpi"><div class="t">Gatavi eksāmenam</div><b>1</b><div class="d">≥ 90% gatavība</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <b style="font-size:16px">Iepriekšējās nodarbības</b>
+        <span class="muted" style="font-size:13px">Klikšķini nodarbību, lai pievienotu/rediģētu komentāru</span>
+      </div>
+      <div class="chipset" id="lessonMonths" style="margin-bottom:14px"></div>
+      <div id="lessonList" style="display:flex;flex-direction:column;gap:11px"></div>
+      <p class="note">Komentāri par katru nodarbību ļauj izsekot, kas ir mācīts un kādā gatavības pakāpē ir kursants. Redzami tikai instruktoram.</p>
+    </div>
+
+    <div class="panel" id="icp2">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+        <div class="chipset" id="txMonths"></div>
+        <span class="muted" style="font-size:13px" id="txRange"></span>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="t">Nopelnīts (bruto)</div><b id="kpiBruto">€0</b><div class="d" id="kpiCount">0 nodarbības</div></div>
+        <div class="kpi"><div class="t">Platformas komisija</div><b id="kpiComm">€0</b><div class="d">10% no apgrozījuma</div></div>
+        <div class="kpi"><div class="t">Neto (tev)</div><b id="kpiNet">€0</b><div class="d">pēc komisijas</div></div>
+        <div class="kpi" style="border-color:var(--brand-l);background:var(--brand-l)"><div class="t" style="color:var(--brand-d)">Pieejams izmaksai</div><b style="color:var(--brand-d)" id="kpiAvail">€0</b><div class="d" style="color:var(--brand-d)">apstiprinātie maksājumi</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <b style="font-size:16px">Transakcijas</b>
+        <button class="btn brand sm" id="payoutBtn" onclick="requestPayout()">Pieprasīt izmaksu</button>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Datums</th><th>Kursants</th><th>Nodarbība</th><th>Summa</th><th>Komisija</th><th>Neto</th><th>Statuss</th></tr></thead>
+        <tbody id="txBody"></tbody>
+      </table></div>
+      <p class="note">Platforma iekasē maksājumus no kursantiem, ietur komisiju un pārskaita neto summu instruktoram pēc izmaksas pieprasījuma.</p>
+    </div>
+
+    <div class="panel" id="icp3">
+      <div class="reviews" id="ic-reviews"></div>
+    </div>
+
+    <div class="panel" id="icp4">
+      <div class="row2">
+        <div class="field"><label>Vārds, uzvārds</label><input value="Jānis Kalniņš"></div>
+        <div class="field"><label>Pilsēta / rajons</label><input value="Rīga, centrs"></div>
+      </div>
+      <div class="field"><label>Galvenais attēls</label>
+        <div style="display:flex;gap:12px;align-items:center">
+          <div class="avatar" style="width:56px;height:56px;background:linear-gradient(135deg,#0f766e,#14b8a6)">JK</div>
+          <button class="btn ghost sm">Augšupielādēt attēlu</button>
+          <button class="btn ghost sm">+ Pievienot galeriju (auto)</button>
+        </div>
+      </div>
+      <div class="field"><label>Apraksts — latviešu (LV)</label><textarea rows="3">Pieredzējis B kategorijas instruktors Rīgas centrā. Mierīga, strukturēta pieeja, piemērota arī tiem, kas pie stūres jūtas nedroši.</textarea></div>
+      <div class="field"><label>Apraksts — angļu (EN)</label><textarea rows="2">Experienced category B instructor in central Riga. Calm, structured approach, great for nervous learners.</textarea></div>
+      <div class="field"><label>Apraksts — krievu (RU)</label><textarea rows="2">Опытный инструктор категории B в центре Риги. Спокойный, структурированный подход.</textarea></div>
+      <button class="btn brand sm" onclick="toast('Profils atjaunināts')">Saglabāt profilu</button>
+    </div>
+  </div>
+
+  <!-- ============ ADMIN CABINET ============ -->
+  <div class="view" id="view-admin">
+    <div class="cab-head">
+      <div class="av" style="background:linear-gradient(135deg,#e8863b,#d8662a)">PA</div>
+      <div>
+        <h1 style="font-size:24px;font-weight:800;letter-spacing:-.02em">Presto Autoskola</h1>
+        <div class="muted" style="font-size:14px">Galvenā administratore · Rīga, Jelgava, Ogre</div>
+      </div>
+      <button class="btn ghost sm" style="margin-left:auto" onclick="openSchool('presto')">Skatīt publisko profilu →</button>
+    </div>
+    <div class="tabs" id="adTabs">
+      <button class="on" onclick="adTab(0,this)">Pārskats</button>
+      <button onclick="adTab(1,this)">Instruktori</button>
+      <button onclick="adTab(2,this)">Administratori</button>
+      <button onclick="adTab(3,this)">Produkti</button>
+    </div>
+
+    <div class="panel on" id="adp0">
+      <div class="kpis">
+        <div class="kpi"><div class="t">Aktīvie instruktori</div><b>12</b><div class="d up">+2 šomēnes</div></div>
+        <div class="kpi"><div class="t">Rezervācijas (mēn.)</div><b>284</b><div class="d up">+18%</div></div>
+        <div class="kpi"><div class="t">Jauni kursanti</div><b>47</b><div class="d">caur platformu</div></div>
+        <div class="kpi"><div class="t">Vidējais reitings</div><b>4.8 ★</b><div class="d">412 balsojumi</div></div>
+      </div>
+      <div class="card" style="padding:20px">
+        <b style="font-size:16px">Publiskā profila saite</b>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap">
+          <code style="font-family:var(--mono);background:var(--surface-2);padding:10px 14px;border-radius:10px;border:1px solid var(--line);font-size:13px">autoskolas.com/presto-autoskola</code>
+          <button class="btn ghost sm" onclick="openSchool('presto')">Atvērt</button>
+          <button class="btn ghost sm" onclick="toast('Saite nokopēta')">Kopēt</button>
+        </div>
+        <p class="muted" style="font-size:13px;margin-top:12px">Visa informācija portālā ir krusteniski saistīta: pilsētas → kategorijas → instruktori.</p>
+      </div>
+    </div>
+
+    <div class="panel" id="adp1">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <b style="font-size:16px">Reģistrētie instruktori</b>
+        <button class="btn brand sm" onclick="toast('Jauna instruktora uzaicinājums nosūtīts')">+ Reģistrēt instruktoru</button>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Instruktors</th><th>Kategorijas</th><th>Pilsēta</th><th>Reitings</th><th>Statuss</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:700">Jānis Kalniņš</td><td>B, BE</td><td>Rīga</td><td>4.9 ★</td><td><span class="tag on">Aktīvs</span></td></tr>
+          <tr><td style="font-weight:700">Līga Ozola</td><td>B</td><td>Rīga</td><td>4.8 ★</td><td><span class="tag on">Aktīvs</span></td></tr>
+          <tr><td style="font-weight:700">Andris Bērziņš</td><td>A, A2</td><td>Jelgava</td><td>4.7 ★</td><td><span class="tag on">Aktīvs</span></td></tr>
+          <tr><td style="font-weight:700">Marta Liepa</td><td>B, C</td><td>Ogre</td><td>5.0 ★</td><td><span class="tag off">Uzaicināts</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="panel" id="adp2">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <b style="font-size:16px">Administratori</b>
+        <button class="btn brand sm" onclick="toast('Jauna administratora uzaicinājums nosūtīts')">+ Piešķirt administratoru</button>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Vārds</th><th>E-pasts</th><th>Loma</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:700">Anna Priede</td><td class="muted">anna@presto.lv</td><td><span class="tag adm">Galvenā admina</span></td></tr>
+          <tr><td style="font-weight:700">Kārlis Zariņš</td><td class="muted">karlis@presto.lv</td><td><span class="tag on">Administrators</span></td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Galvenā administratore var piešķirt citus administratorus un reģistrēt instruktorus.</p>
+    </div>
+
+    <div class="panel" id="adp3">
+      <b style="font-size:16px">Produkti un cenas</b>
+      <p class="muted" style="font-size:13.5px;margin:6px 0 20px">Norādi katras pozīcijas maksu un ieslēdz, ko rādīt publiskajā profilā.</p>
+
+      <div class="section-title" style="margin-top:0">Reģistrācija · dokumentu apstrāde</div>
+      <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <span style="font-size:22px">📝</span>
+        <div style="flex:1;min-width:160px"><div style="font-weight:800;font-size:15px">Reģistrācijas maksa</div>
+          <div class="muted" style="font-size:12.5px">Vienreizēja maksa par līguma slēgšanu un dokumentu apstrādi</div></div>
+        <div style="display:flex;align-items:center;gap:7px"><input type="number" value="15" style="width:84px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font-family:var(--mono);font-weight:700" onchange="toast('Reģistrācijas maksa atjaunināta')"><span style="font-weight:700">€</span></div>
+        <div class="switch on" onclick="this.classList.toggle('on')"></div>
+      </div>
+
+      <div class="section-title">Teorija · cena katrai kategorijai</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Kategorija</th><th>Apraksts</th><th>Cena (€)</th><th>Publisks</th></tr></thead>
+        <tbody id="theoryBody"></tbody>
+      </table></div>
+      <button class="btn ghost sm" style="margin-top:10px" onclick="toast('Pievienots jauns kategorijas rindas lauks')">+ Pievienot kategoriju</button>
+
+      <div class="section-title">Braukšanas nodarbības un paketes</div>
+      <div id="prodList"></div>
+      <button class="btn ghost sm" style="margin-top:4px" onclick="toast('Jauna pakalpojumu pakete izveidota')">+ Jauna pakalpojumu pakete</button>
+
+      <div class="section-title">Instruktoru komisija</div>
+      <p class="muted" style="font-size:13.5px;margin:-6px 0 14px">Procents, ko autoskola nopelna no katra instruktora par pārstāvību un klientu plūsmu. Rēķina no instruktora nodarbību apgrozījuma.</p>
+      <div class="card" style="padding:16px;margin-bottom:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--surface-2)">
+        <div style="flex:1;min-width:180px"><div style="font-weight:800;font-size:14px">Noklusējuma komisija visiem</div>
+          <div class="muted" style="font-size:12.5px">Piemēro jaunreģistrētiem instruktoriem</div></div>
+        <div style="display:flex;align-items:center;gap:7px"><input type="number" value="15" style="width:76px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font-family:var(--mono);font-weight:700" onchange="toast('Noklusējuma komisija atjaunināta')"><span style="font-weight:700">%</span></div>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Instruktors</th><th>Kategorijas</th><th>Apgrozījums (mēn.)</th><th>Komisija (%)</th><th>Autoskolai (€)</th></tr></thead>
+        <tbody id="commBody"></tbody>
+      </table></div>
+      <button class="btn brand sm" style="margin-top:14px" onclick="toast('Visas cenas un komisijas saglabātas')">Saglabāt izmaiņas</button>
+    </div>
+  </div>
+  <!-- ============ INSTRUCTOR DIRECTORY (public) ============ -->
+  <div class="view" id="view-instructors">
+    <div class="tabs" style="margin-top:0;margin-bottom:20px">
+      <button onclick="goCatalog()">Autoskolas</button>
+      <button class="on" onclick="goInstructors()">Instruktori</button>
+    </div>
+    <div class="eyebrow">Visi instruktori vienuviet</div>
+    <h1 class="big">Atrodi savu braukšanas instruktoru</h1>
+    <p class="lead" style="margin-top:12px">Šķiro pēc pilsētas un kategorijas, salīdzini cenas, statistiku un atsauksmes — un piesakies tieši pie izvēlētā instruktora.</p>
+    <div class="filters">
+      <div class="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b9299" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="iq" placeholder="Meklēt instruktoru…" oninput="renderInstructorsDir()">
+      </div>
+    </div>
+    <div style="margin-bottom:8px"><div class="muted" style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px">Pilsēta</div><div class="chipset" id="insCity"></div></div>
+    <div style="margin:14px 0 20px"><div class="muted" style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px">Kategorija</div><div class="chipset" id="insCat"></div></div>
+    <div class="grid" id="instrDir" style="grid-template-columns:repeat(auto-fill,minmax(310px,1fr))"></div>
+  </div>
+
+  <!-- ============ USER PANEL ============ -->
+  <div class="view" id="view-user">
+    <div id="userLogin" style="max-width:430px;margin:48px auto">
+      <div class="card" style="padding:34px;text-align:center">
+        <div style="width:64px;height:64px;border-radius:18px;background:var(--brand-l);color:var(--brand-d);display:grid;place-items:center;margin:0 auto 18px">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <h1 style="font-size:23px;font-weight:800;letter-spacing:-.02em">Lietotāja profils</h1>
+        <p class="muted" style="font-size:14px;margin:8px 0 22px">Ienāc ar Smart-ID, lai redzētu savas nodarbības, grafiku, maciņu un transakcijas.</p>
+        <button class="btn brand full" onclick="smartLogin()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          Ienākt ar Smart-ID</button>
+        <p class="note" style="margin-top:16px">Demo: vārds, uzvārds un personas kods tiks automātiski nolasīti no Smart-ID.</p>
+      </div>
+    </div>
+
+    <div id="userDash" style="display:none">
+      <div class="cab-head">
+        <div class="av" id="u-av" style="background:linear-gradient(135deg,#e8863b,#d8662a)"></div>
+        <div>
+          <h1 style="font-size:24px;font-weight:800;letter-spacing:-.02em" id="u-name"></h1>
+          <div class="muted" style="font-size:14px">Personas kods: <span id="u-pk"></span> · nolasīts no Smart-ID</div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span id="u-permit-chip"></span>
+          <div class="pill" style="background:var(--brand-l);border-color:transparent;color:var(--brand-d);font-size:14px;padding:8px 14px">
+            💳 Maciņš: <b id="u-wallet-chip" style="margin-left:4px"></b></div>
+          <button class="btn ghost sm" onclick="smartLogout()">Iziet</button>
+        </div>
+      </div>
+      <div class="tabs" id="uTabs">
+        <button class="on" onclick="uTab(0,this)">Maciņš</button>
+        <button onclick="uTab(1,this)">Grafiks</button>
+        <button onclick="uTab(2,this)">Nodarbību vēsture</button>
+        <button onclick="uTab(3,this)">Transakcijas</button>
+        <button onclick="uTab(4,this)">Profils</button>
+      </div>
+
+      <div class="panel on" id="up0">
+        <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:16px" class="walletgrid">
+          <div class="card" style="padding:22px;background:linear-gradient(135deg,#0f766e,#0b5a53);color:#fff">
+            <div style="font-size:13px;color:#bfe3de;font-weight:600">Virtuālā maciņa atlikums</div>
+            <div style="font-size:40px;font-weight:800;letter-spacing:-.02em;margin:6px 0 4px" id="u-wallet-big"></div>
+            <div style="font-size:12.5px;color:#bfe3de">No maciņa apmaksā braukšanas nodarbības</div>
+          </div>
+          <div class="card" style="padding:22px">
+            <b style="font-size:15px">Papildināt maciņu</b>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0">
+              <button class="chip" onclick="addFunds(20)">+ €20</button>
+              <button class="chip" onclick="addFunds(50)">+ €50</button>
+              <button class="chip" onclick="addFunds(100)">+ €100</button>
+            </div>
+            <div style="display:flex;gap:8px">
+              <input id="u-topup" type="number" placeholder="Cita summa" style="flex:1;padding:11px 13px;border:1px solid var(--line);border-radius:11px;outline:none">
+              <button class="btn brand sm" onclick="addFundsCustom()">Iemaksāt</button>
+            </div>
+            <p class="note" style="margin-top:14px">Demo: iemaksa ar Smart-ID / maksājumu karti.</p>
+          </div>
+        </div>
+        <div class="section-title">Neapmaksātās nodarbības</div>
+        <div id="u-unpaid" style="display:flex;flex-direction:column;gap:11px"></div>
+      </div>
+
+      <div class="panel" id="up1">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <b style="font-size:16px">Turpmākās nodarbības</b>
+          <button class="btn ghost sm" onclick="goInstructors()">+ Rezervēt jaunu</button>
+        </div>
+        <div id="u-upcoming" style="display:flex;flex-direction:column;gap:11px"></div>
+      </div>
+
+      <div class="panel" id="up2">
+        <b style="font-size:16px">Nodarbību vēsture</b>
+        <p class="muted" style="font-size:13.5px;margin:6px 0 14px">Visas pabeigtās nodarbības ar instruktora komentāriem.</p>
+        <div id="u-past" style="display:flex;flex-direction:column;gap:11px"></div>
+      </div>
+
+      <div class="panel" id="up3">
+        <b style="font-size:16px">Visas transakcijas</b>
+        <div class="tbl-wrap" style="margin-top:14px"><table>
+          <thead><tr><th>Datums</th><th>Tips</th><th>Apraksts</th><th style="text-align:right">Summa</th></tr></thead>
+          <tbody id="u-tx"></tbody>
+        </table></div>
+      </div>
+
+      <div class="panel" id="up4">
+        <div class="row2">
+          <div class="field"><label>Vārds (no Smart-ID)</label><input id="u-f-name" disabled style="background:var(--surface-2);color:var(--ink-faint)"></div>
+          <div class="field"><label>Uzvārds (no Smart-ID)</label><input id="u-f-surname" disabled style="background:var(--surface-2);color:var(--ink-faint)"></div>
+        </div>
+        <div class="field"><label>Personas kods (no Smart-ID)</label><input id="u-f-pk" disabled style="background:var(--surface-2);color:var(--ink-faint)"></div>
+        <div class="row2">
+          <div class="field"><label>E-pasts</label><input id="u-f-email"></div>
+          <div class="field"><label>Tālrunis</label><input id="u-f-phone"></div>
+        </div>
+        <button class="btn brand sm" onclick="saveUserProfile()">Saglabāt izmaiņas</button>
+        <p class="note" style="margin-top:14px">Vārds, uzvārds un personas kods nāk no Smart-ID un nav rediģējami. Mainīt var e-pastu un tālruni.</p>
+
+        <div class="section-title">Braukšanas mācību atļauja</div>
+        <div id="permitCard"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- AI FAB + panel -->
+<button class="ai-fab" id="aiFab" onclick="openAI()"><span class="d"></span>AI asistents</button>
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-top">
+    <div class="bot"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><rect x="4" y="7" width="16" height="12" rx="3"/><path d="M12 7V4M9 13h.01M15 13h.01"/></svg></div>
+    <div><h4>Autoskolu AI asistents</h4><div class="st">● Tiešsaistē · redz instruktoru grafikus</div></div>
+    <button class="x" onclick="closeAI()">×</button>
+  </div>
+  <div class="ai-body" id="aiBody"></div>
+  <div class="ai-sugg" id="aiSugg"></div>
+  <div class="ai-input">
+    <input id="aiInput" placeholder="Jautā par autoskolām, laikiem, cenām…" onkeydown="if(event.key==='Enter')aiSend()">
+    <button onclick="aiSend()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+  </div>
+</div>
+
+<!-- Booking modal -->
+<div class="overlay" id="bkOverlay">
+  <div class="modal" style="position:relative">
+    <button class="close" onclick="closeBooking()">×</button>
+    <!-- step 1 slot -->
+    <div class="step on" id="bk0">
+      <h3>Rezervēt braukšanas nodarbību</h3>
+      <p class="muted" style="font-size:14px;margin-top:4px" id="bk-ins"></p>
+      <div style="margin:18px 0">
+        <div class="confrow"><span>Instruktors</span><b id="bk-r-ins"></b></div>
+        <div class="confrow"><span>Laiks</span><b id="bk-r-time"></b></div>
+        <div class="confrow"><span>Ilgums</span><b>90 min</b></div>
+        <div class="confrow"><span>Cena</span><b id="bk-r-price"></b></div>
+      </div>
+      <button class="btn brand full" onclick="bkStep(1)">Turpināt ar Smart-ID</button>
+    </div>
+    <!-- step 2 smart-id -->
+    <div class="step" id="bk1">
+      <h3>Autorizācija ar Smart-ID</h3>
+      <div class="field" style="margin-top:16px"><label>Personas kods</label><input value="31129012345" id="pk"></div>
+      <button class="btn brand full" onclick="bkStep(2)">Nosūtīt pieprasījumu</button>
+      <p class="note">Demo: reālā versijā šeit notiek Smart-ID autentifikācija.</p>
+    </div>
+    <!-- step 3 waiting -->
+    <div class="step" id="bk2">
+      <div class="smartid">
+        <p style="font-weight:700">Apstipriniet Smart-ID lietotnē</p>
+        <p class="muted" style="font-size:13px">Pārliecinieties, ka kontrolkods sakrīt:</p>
+        <div class="code">4729</div>
+        <div class="spinner"></div>
+        <p class="muted" style="font-size:13px">Gaida apstiprinājumu…</p>
+      </div>
+    </div>
+    <!-- step 4 success -->
+    <div class="step" id="bk3">
+      <div style="text-align:center">
+        <div class="success-ic">✓</div>
+        <h3>Nodarbība rezervēta!</h3>
+        <p class="muted" style="font-size:14px;margin:8px 0 4px" id="bk-done"></p>
+      </div>
+      <div style="margin:18px 0">
+        <div class="confrow"><span>Instruktors</span><b id="bk-d-ins"></b></div>
+        <div class="confrow"><span>Laiks</span><b id="bk-d-time"></b></div>
+        <div class="confrow"><span>Apstiprinājums</span><b>e-pastā un lietotnē</b></div>
+      </div>
+      <p class="note">Pēc nodarbības varēsi atstāt atsauksmi par instruktoru.</p>
+      <button class="btn full" style="margin-top:12px" onclick="bkStep(4)">⏩ Simulēt pabeigtu nodarbību → atstāt atsauksmi</button>
+      <button class="btn ghost full" style="margin-top:8px" onclick="closeBooking()">Aizvērt</button>
+    </div>
+    <!-- step 5 review -->
+    <div class="step" id="bk4">
+      <h3>Atstāt atsauksmi</h3>
+      <p class="muted" style="font-size:14px;margin-top:4px">Tava nodarbība ar <b id="rv-ins"></b> ir pabeigta. Novērtē to:</p>
+      <div class="starpick" id="starpick">
+        <span onclick="setStars(1)">★</span><span onclick="setStars(2)">★</span><span onclick="setStars(3)">★</span><span onclick="setStars(4)">★</span><span onclick="setStars(5)">★</span>
+      </div>
+      <div class="field"><textarea id="rvText" rows="3" placeholder="Dalies pieredzē par nodarbību…">Ļoti mierīga un skaidra pieeja, jutos droši jau no pirmās nodarbības.</textarea></div>
+      <button class="btn brand full" onclick="submitReview()">Publicēt atsauksmi</button>
+      <p class="note">Atsauksmi var atstāt tikai lietotājs ar reālu, pabeigtu darījumu — tas nodrošina autentiskumu.</p>
+    </div>
+  </div>
+</div>
+
+<div id="toast" style="position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;font-weight:600;font-size:14px;z-index:120;opacity:0;transition:.3s;pointer-events:none;box-shadow:var(--shadow)"></div>
+
+<!-- Cancel lesson modal -->
+<div class="overlay" id="cxOverlay">
+  <div class="modal" style="position:relative;max-width:430px">
+    <button class="close" onclick="closeCancelModal()">×</button>
+    <div style="width:54px;height:54px;border-radius:50%;background:var(--accent-l);color:var(--accent);display:grid;place-items:center;font-size:26px;margin-bottom:14px">⚠</div>
+    <h3>Atcelt mazāk kā 24h pirms sākuma?</h3>
+    <p class="muted" style="font-size:14px;margin:10px 0" id="cx-text"></p>
+    <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:14px;margin:14px 0" id="cx-breakdown"></div>
+    <button class="btn full" style="background:var(--danger)" onclick="doCancel(true)">Atcelt un izmaksāt kompensāciju</button>
+    <button class="btn ghost full" style="margin-top:8px" onclick="closeCancelModal()">Paturēt nodarbību</button>
+  </div>
+</div>
+
+<script>
+/* ---------------- DYNAMIC DATES (relatīvi pret šodienu) ---------------- */
+const NOW=new Date();
+const TODAY0=new Date(NOW.getFullYear(),NOW.getMonth(),NOW.getDate());
+function fmtKey(d){return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();}
+function dayOff(n){const d=new Date(TODAY0);d.setDate(d.getDate()+n);return d;}
+function keyOff(n){return fmtKey(dayOff(n));}
+const TODAY=keyOff(0);
+const SOON=(function(){let sd=new Date(NOW.getTime()+3*3600*1000);
+  if(sd.getHours()>=22){sd=new Date(TODAY0);sd.setDate(sd.getDate()+1);sd.setHours(9,30,0,0);}
+  else if(sd.getHours()<7){sd=new Date(TODAY0);sd.setHours(9,30,0,0);}
+  const mm=sd.getMinutes()<30?'00':'30';
+  return {date:fmtKey(new Date(sd.getFullYear(),sd.getMonth(),sd.getDate())),time:String(sd.getHours()).padStart(2,'0')+':'+mm};})();
+let LANG='lv';
+function L(lv,en){return LANG==='en'?en:lv;}
+
+/* ---------------- DATA (reālas autoskolas no autoskolas.com) ---------------- */
+const CATS=['A','B','BE','C','CE','D'];
+const COL={presto:'#0f766e',einsteins:'#2563eb',credo:'#c7483b',gross:'#7c3aed',bava:'#0891b2',godrive:'#e8863b'};
+const schools=[
+ {id:'presto',name:'Presto Autoskola',city:'Rīga',cats:['AM','A','B','C','CE','95'],rating:'4.8',votes:412,
+  desc:'Apmācība 3 valodās un plašākais tālmācības programmu klāsts Latvijā. Regulāri 1. vieta CSDD teorijas eksāmenu rezultātos. Fokuss — mazāks laiks un izmaksas ceļā līdz vadītāja apliecībai.'},
+ {id:'einsteins',name:'Autoskola Einšteins',city:'Rīga',cats:['AM','A','B','BE','C','CE'],rating:'4.7',votes:188,
+  desc:'Vadītāju apmācība AM, A, B, BE, C un CE kategorijās visā Latvijā — latviešu, krievu un angļu valodā. Mūsdienīga, digitāla pieeja un ātri uzsākams mācību process.'},
+ {id:'credo',name:'Credo Autoprieks',city:'Rīga',cats:['A','B','BE','C','D','CE'],rating:'4.6',votes:301,
+  desc:'Viena no lielākajām autoskolām Latvijā ar 25 gadu pieredzi. Teorijas apguve gan klātienē, gan online, ar filiālēm desmit Latvijas pilsētās.'},
+ {id:'gross',name:'Autoskola Gross',city:'Rīga',cats:['A','B','BE'],rating:'4.5',votes:142,
+  desc:'A, B un BE kategorijas apmācība Rīgā un Daugavpilī latviešu un krievu valodā. Klasiska pieeja apvienota ar digitāliem risinājumiem.'},
+ {id:'bava',name:'BAVA Autoskola',city:'Rīga',cats:['A','A2','B'],rating:'4.6',votes:167,
+  desc:'B un A/A2 kategorijas apmācība Rīgā, Jelgavā un Ogrē. Digitālā mācību ekosistēma — virtuālie braucieni, video saturs un teorijas treniņu platforma.'},
+ {id:'godrive',name:'Autoskola GoDrive',city:'Rīga',cats:['B','BE'],rating:'4.7',votes:98,
+  desc:'Mūsdienīga mācību organizācija un elastīga pieeja. 2024. gadā apvienojusies ar Braukšanas akadēmiju, veidojot paplašinātu apmācību modeli.'},
+];
+const instructors={
+ jkalnins:{id:'jkalnins',name:'Jānis Kalniņš',school:'presto',city:'Rīga',cats:['B','BE'],area:'Rīga, centrs',col:'#0f766e',init:'JK',rating:'4.9',rev:38,lessons:126,wd:22,we:28,
+  bio:{lv:'Pieredzējis B kategorijas instruktors Rīgas centrā. Mierīga, strukturēta pieeja, piemērota arī tiem, kas pie stūres jūtas nedroši.',en:'Experienced category B instructor in central Riga. Calm, structured approach, great for nervous learners.',ru:'Опытный инструктор категории B в центре Риги. Спокойный, структурированный подход.'}},
+ lozola:{id:'lozola',name:'Līga Ozola',school:'presto',city:'Rīga',cats:['B'],area:'Rīga, Pārdaugava',col:'#c7483b',init:'LO',rating:'4.8',rev:52,lessons:210,wd:20,we:26,
+  bio:{lv:'B kategorijas instruktore ar 8 gadu pieredzi. Pacietīga pieeja, īpaši laba darbam ar iesācējiem un trauksmainiem kursantiem.',en:'Category B instructor with 8 years of experience. Patient approach for beginners.',ru:'Инструктор категории B с опытом 8 лет. Терпеливый подход к новичкам.'}},
+ aberzins:{id:'aberzins',name:'Andris Bērziņš',school:'einsteins',city:'Jelgava',cats:['A','A2'],area:'Jelgava',col:'#2563eb',init:'AB',rating:'4.7',rev:29,lessons:88,wd:25,we:30,
+  bio:{lv:'Moto instruktors (A, A2). Specializējas drošas braukšanas tehnikā un figūru laukuma apmācībā.',en:'Motorcycle instructor (A, A2). Specialises in safe riding technique.',ru:'Мотоинструктор (A, A2). Специализация — техника безопасной езды.'}},
+ mliepa:{id:'mliepa',name:'Marta Liepa',school:'credo',city:'Ogre',cats:['B','C'],area:'Ogre',col:'#7c3aed',init:'ML',rating:'5.0',rev:41,lessons:142,wd:24,we:29,
+  bio:{lv:'B un C kategorijas instruktore. Strukturēts mācību process ar fokusu uz pārliecinātu braukšanu pilsētā.',en:'Category B and C instructor focused on confident city driving.',ru:'Инструктор категорий B и C с фокусом на уверенное вождение в городе.'}},
+ rkrumins:{id:'rkrumins',name:'Roberts Krūmiņš',school:'gross',city:'Liepāja',cats:['B','BE'],area:'Liepāja',col:'#0891b2',init:'RK',rating:'4.6',rev:24,lessons:73,wd:19,we:24,
+  bio:{lv:'B un BE instruktors Liepājā. Elastīgs grafiks, daudz prakses ostas pilsētas satiksmē un uz šosejas.',en:'Category B and BE instructor in Liepāja. Flexible schedule, plenty of highway practice.',ru:'Инструктор B и BE в Лиепае. Гибкий график, много практики на шоссе.'}},
+ nsalna:{id:'nsalna',name:'Nora Salna',school:'bava',city:'Daugavpils',cats:['B'],area:'Daugavpils',col:'#d8662a',init:'NS',rating:'4.9',rev:33,lessons:118,wd:18,we:23,
+  bio:{lv:'B kategorijas instruktore Daugavpilī. Māca latviski un krieviski, īpaši laba darbā ar jauniešiem.',en:'Category B instructor in Daugavpils. Teaches in Latvian and Russian.',ru:'Инструктор категории B в Даугавпилсе. Обучение на латышском и русском.'}},
+};
+const schoolInstr={presto:['jkalnins','lozola'],einsteins:['aberzins'],credo:['mliepa'],gross:['rkrumins'],bava:['nsalna'],godrive:['mliepa']};
+const OFFER=[
+ {ic:'📝',name:'Reģistrācija',desc:'Attālināta līguma slēgšana ar Smart-ID.',price:'0',unit:'bez maksas'},
+ {ic:'📚',name:'Teorija',desc:'Tālmācība + Presto tematiskie uzdevumi.',price:'149',unit:'/ kurss'},
+ {ic:'🚗',name:'Braukšanas nodarbības',desc:'Elektronisks grafiks, cena pie instruktora.',price:'20–28',unit:'/ 90 min'},
+ {ic:'🎁',name:'Pakalpojumu pakete',desc:'Teorija + 10 braukšanas + eksāmens.',price:'390',unit:'fiksēta cena'},
+];
+let seedReviews=[
+ {who:'Elīna R.',init:'ER',col:'#0f766e',stars:5,text:'Ļoti profesionāls instruktors, nokārtoju eksāmenu pirmajā reizē!',reply:'Paldies, Elīna! Prieks par tavu rezultātu 🚗'},
+ {who:'Toms B.',init:'TB',col:'#c7483b',stars:5,text:'Mierīgs un pacietīgs. Ieteiktu ikvienam, kas baidās no satiksmes.',reply:null},
+ {who:'Kristaps V.',init:'KV',col:'#2563eb',stars:4,text:'Labas nodarbības, elastīgs ar laikiem. Rezervēšana caur platformu ļoti ērta.',reply:null},
+];
+
+/* ---------------- STATE ---------------- */
+let currentSchool=schools[0], currentInstr=instructors.jkalnins, currentDate=null, selectedSlot=null, curBio='lv', pickedStars=5;
+const COMMON_TIMES=['08:00','09:30','11:00','12:30','14:00','15:30','17:00','18:30'];
+const WD_LV=['Svētdiena','Pirmdiena','Otrdiena','Trešdiena','Ceturtdiena','Piektdiena','Sestdiena'];
+const WD_SHORT=['Sv','Pr','Ot','Tr','Ce','Pk','Se'];
+function dateList(n){const base=new Date(TODAY0);const out=[];for(let i=0;i<n;i++){const d=new Date(base);d.setDate(base.getDate()+i);const dd=String(d.getDate()).padStart(2,'0'),mm=String(d.getMonth()+1).padStart(2,'0');out.push({key:dd+'.'+mm+'.'+d.getFullYear(),dow:d.getDay()});}return out;}
+function parseKey(k){const p=k.split('.').map(Number);return new Date(p[2],p[1]-1,p[0]);}
+function sortDateKey(a,b){return parseKey(a)-parseKey(b);}
+function isWe(k){const g=parseKey(k).getDay();return g===0||g===6;}
+let avail={};
+/* laiki: 45 min solis 07:00–22:00; nodarbība 90 min, tāpēc jauns laiks nedrīkst būt tuvāk par 90 min esošajiem */
+const ALL_TIMES=(function(){const o=[];for(let m=7*60;m<=22*60;m+=45){o.push(String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'));}return o;})();
+function toMin(t){const p=t.split(':').map(Number);return p[0]*60+p[1];}
+function availableTimes(selected){const sel=selected.map(toMin);return ALL_TIMES.filter(t=>{const tm=toMin(t);return !sel.some(s=>Math.abs(s-tm)<90);});}
+function seedAvail(){const days=dateList(21);Object.keys(instructors).forEach((iid,k)=>{avail[iid]={};days.forEach((d,di)=>{if(d.dow===0)return;const wk=Math.floor(di/7);const pick=[];let last=-999;ALL_TIMES.forEach((t,ti)=>{const tm=toMin(t);if(((di*2+ti+k*3+wk)%5)===0&&tm-last>=90){pick.push(t);last=tm;}});if(pick.length)avail[iid][d.key]=pick.slice(0,4);});});}
+
+/* ---------------- ROLE / VIEW ---------------- */
+function setRole(r){
+  document.querySelectorAll('#roles button').forEach(b=>b.classList.toggle('on',b.dataset.role===r));
+  if(r==='public') goCatalog();
+  if(r==='user') show('view-user');
+  if(r==='instr') show('view-instr-cab');
+  if(r==='admin'){show('view-admin');renderProducts();}
+}
+/* month helpers */
+const MONTHS_LV={'01':'Janvāris','02':'Februāris','03':'Marts','04':'Aprīlis','05':'Maijs','06':'Jūnijs','07':'Jūlijs','08':'Augusts','09':'Septembris','10':'Oktobris','11':'Novembris','12':'Decembris'};
+function mKey(d){return d.slice(3);}
+function mLabel(k){return MONTHS_LV[k.slice(0,2)]+' '+k.slice(3);}
+function monthsOf(arr){return [...new Set(arr.map(x=>mKey(x.date)))];}
+function show(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.getElementById(id).classList.add('on');window.scrollTo({top:0,behavior:'smooth'});}
+function goCatalog(){document.querySelectorAll('#roles button').forEach(b=>b.classList.toggle('on',b.dataset.role==='public'));show('view-catalog');renderSchools();}
+
+/* ---------------- CATALOG ---------------- */
+let catFilter='';
+function renderChips(){
+  const c=document.getElementById('catChips');
+  c.innerHTML=`<button class="chip ${catFilter===''?'on':''}" onclick="catFilter='';renderSchools()">Visas</button>`+
+    CATS.map(k=>`<button class="chip ${catFilter===k?'on':''}" onclick="catFilter='${k}';renderSchools()">${k} kat.</button>`).join('');
+}
+function renderSchools(){
+  renderChips();
+  const q=(document.getElementById('q').value||'').toLowerCase();
+  const list=schools.filter(s=>(s.name.toLowerCase().includes(q)||s.city.toLowerCase().includes(q))&&(catFilter===''||s.cats.includes(catFilter)));
+  document.getElementById('schoolGrid').innerHTML=list.map(s=>`
+    <div class="card school-card" onclick="openSchool('${s.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <div class="logo" style="background:${COL[s.id]}">${initials(s.name)}</div>
+        <span class="rating" style="font-size:14px"><span class="s">★</span>${s.rating}</span>
+      </div>
+      <div><h3>${s.name}</h3><div class="muted" style="font-size:13px">📍 ${s.city}</div></div>
+      <div class="cats">${s.cats.slice(0,5).map(c=>`<span class="pill cat">${c}</span>`).join('')}</div>
+      <div class="meta"><span class="muted">${s.votes} balsojumi</span><span style="font-weight:700;color:var(--brand)">Skatīt profilu →</span></div>
+    </div>`).join('')||'<p class="muted">Nav rezultātu.</p>';
+}
+function initials(n){return n.replace(/Autoskola|autoskola/g,'').trim().split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();}
+
+/* ---------------- SCHOOL PROFILE ---------------- */
+function openSchool(id){
+  const s=schools.find(x=>x.id===id);currentSchool=s;
+  document.getElementById('sch-crumb').textContent=s.name;
+  document.getElementById('sch-logo').textContent=initials(s.name);
+  document.getElementById('sch-logo').style.background=COL[s.id];
+  document.getElementById('sch-name').textContent=s.name;
+  document.getElementById('sch-rate').textContent=s.rating;
+  document.getElementById('sch-votes').textContent=s.votes+' balsojumi';
+  document.getElementById('sch-city').textContent='📍 '+s.city;
+  document.getElementById('sch-desc').textContent=s.desc;
+  document.getElementById('sch-cats').innerHTML=s.cats.map(c=>`<span class="pill cat">${c}</span>`).join('');
+  document.getElementById('sch-offer').innerHTML=OFFER.map(o=>`
+    <div class="o"><div class="ic">${o.ic}</div><h4>${o.name}</h4><p>${o.desc}</p>
+      <div class="price">€${o.price} <small>${o.unit}</small></div></div>`).join('');
+  const ins=schoolInstr[id]||[];
+  document.getElementById('sch-instr').innerHTML=ins.map(iid=>{const i=instructors[iid];return `
+    <div class="card instr-card" onclick="viewInstructor('${iid}','${id}')">
+      <div class="avatar" style="background:${i.col}">${i.init}</div>
+      <div><h4>${i.name}</h4><div class="sm">${i.cats.join(', ')} · ${i.area}</div>
+        <div class="rating" style="font-size:13px;margin-top:3px"><span class="s">★</span>${i.rating} <span class="muted" style="font-weight:500">(${i.rev})</span></div></div>
+    </div>`;}).join('');
+  show('view-school');
+}
+
+/* ---------------- INSTRUCTOR PROFILE ---------------- */
+function viewInstructor(iid,sid){
+  const i=instructors[iid];currentInstr=i;currentSchool=schools.find(x=>x.id===sid);currentDate=null;selectedSlot=null;curBio='lv';
+  document.getElementById('ins-crumb-sch').textContent=currentSchool.name;
+  document.getElementById('ins-crumb').textContent=i.name;
+  document.getElementById('ins-name').textContent=i.name;
+  document.getElementById('ins-av').textContent=i.init;document.getElementById('ins-av').style.background=i.col;
+  document.getElementById('ins-sub').textContent=i.cats.join(', ')+' kategorija · '+i.area;
+  document.getElementById('ins-cat-pill').textContent=i.cats.join(', ');
+  document.getElementById('ins-gallery').innerHTML=[0,1,2].map(n=>`<div class="ph">${carSVG(i.col,n)}</div>`).join('');
+  document.querySelectorAll('#ins-langtabs button').forEach((b,ix)=>b.classList.toggle('on',ix===(LANG==='en'?1:0)));
+  curBio=LANG==='en'?'en':'lv';
+  document.getElementById('ins-bio').textContent=i.bio[curBio];
+  renderDays();renderReviews('ins-reviews',true===false);
+  renderReviews('ins-reviews',false);
+  show('view-instr');
+}
+function setBio(l,el){curBio=l;document.querySelectorAll('#ins-langtabs button').forEach(b=>b.classList.remove('on'));el.classList.add('on');document.getElementById('ins-bio').textContent=currentInstr.bio[l];}
+function renderDays(){
+  const a=avail[currentInstr.id]||{};
+  const keys=Object.keys(a).filter(k=>a[k].length).sort(sortDateKey);
+  if(!keys.includes(currentDate))currentDate=keys[0]||null;
+  const el=document.getElementById('ins-days');
+  if(!keys.length){el.innerHTML='<p class="muted" style="font-size:13px">Instruktors vēl nav pievienojis brīvus laikus.</p>';
+    document.getElementById('ins-slots').innerHTML='';document.getElementById('ins-price').textContent='—';document.getElementById('ins-daytype').textContent='';return;}
+  el.innerHTML=keys.slice(0,12).map(k=>{const d=parseKey(k);const we=isWe(k);
+    return `<button class="${we?'we':''} ${currentDate===k?'on':''}" onclick="pickDate('${k}')">
+      <div style="font-size:10px;opacity:.75">${WD_SHORT[d.getDay()]}</div><div style="font-weight:800">${k.slice(0,5)}</div></button>`;}).join('');
+  renderSlots();
+}
+function pickDate(k){currentDate=k;selectedSlot=null;renderDays();}
+function renderSlots(){
+  const a=avail[currentInstr.id]||{};
+  const times=(currentDate&&a[currentDate])?a[currentDate].slice().sort():[];
+  const weekend=currentDate?isWe(currentDate):false;
+  document.getElementById('ins-slots').innerHTML=times.length?times.map(t=>
+    `<button class="slot ${selectedSlot===t?'on':''}" onclick="selSlot('${t}')" style="${selectedSlot===t?'background:var(--brand);color:#fff;border-color:var(--brand)':''}">${t}</button>`).join('')
+    :'<p class="muted" style="font-size:13px;grid-column:1/-1">Šajā dienā nav brīvu laiku.</p>';
+  document.getElementById('ins-price').textContent='€'+(weekend?currentInstr.we:currentInstr.wd);
+  document.getElementById('ins-daytype').textContent=weekend?'Brīvdienas cena':'Darbdienas cena';
+}
+function selSlot(t){selectedSlot=t;renderSlots();}
+
+/* ---------------- REVIEWS ---------------- */
+function renderReviews(target,withReplyBox){
+  document.getElementById(target).innerHTML=seedReviews.map((r,ix)=>`
+    <div class="review">
+      <div class="top">
+        <div class="who"><div class="mini" style="background:${r.col}">${r.init}</div>${r.who}
+          <span class="verif" style="margin-left:6px">✓ Darījums apstiprināts</span></div>
+        <div class="rating" style="font-size:13px"><span class="s">${'★'.repeat(r.stars)}</span></div>
+      </div>
+      <p>${r.text}</p>
+      ${r.reply?`<div class="reply"><b>Instruktora atbilde</b>${r.reply}</div>`:
+        (withReplyBox?`<div style="margin-top:10px"><button class="btn ghost sm" onclick="replyBox(${ix},this)">Atbildēt</button></div>`:'')}
+    </div>`).join('');
+}
+function replyBox(ix,el){
+  const box=document.createElement('div');box.style.marginTop='10px';
+  box.innerHTML=`<textarea rows="2" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px" placeholder="Tava atbilde…"></textarea>
+    <button class="btn brand sm" style="margin-top:6px">Publicēt atbildi</button>`;
+  el.parentElement.replaceWith(box);
+  box.querySelector('button').onclick=()=>{seedReviews[ix].reply=box.querySelector('textarea').value||'Paldies par atsauksmi!';renderReviews('ic-reviews',true);toast('Atbilde publicēta');};
+}
+
+/* ---------------- INSTRUCTOR CABINET ---------------- */
+function icTab(n,el){document.querySelectorAll('#icTabs button').forEach(b=>b.classList.remove('on'));el.classList.add('on');
+  document.querySelectorAll('[id^=icp]').forEach((p,ix)=>p.classList.toggle('on',ix===n));
+  if(n===1)renderLessons();
+  if(n===2)renderTx();
+  if(n===3)renderReviews('ic-reviews',true);}
+/* ---------------- INSTRUCTOR SCHEDULE BUILDER ---------------- */
+const CAB_IID='jkalnins';
+let addPaletteFor=null, pendingCancel=null;
+let booked={jkalnins:[
+  {date:SOON.date,time:SOON.time,student:'Rihards Caune',price:22,paid:true},
+  {date:keyOff(4),time:'14:00',student:'Toms Bērziņš',price:22,paid:true},
+  {date:keyOff(5),time:'11:00',student:'Elīna Roze',price:22,paid:true},
+  {date:keyOff(6),time:'15:30',student:'Anna Līcīte',price:28,paid:true},
+]};
+function hoursUntil(dateKey,time){const d=parseKey(dateKey);const p=time.split(':').map(Number);d.setHours(p[0],p[1],0,0);return (d-NOW)/36e5;}
+function askCancel(dateKey,time){const b=(booked[CAB_IID]||[]).find(x=>x.date===dateKey&&x.time===time);if(!b)return;
+  pendingCancel={dateKey,time};
+  if(hoursUntil(dateKey,time)<24)showCancelModal(b,hoursUntil(dateKey,time));else doCancel(false);}
+function doCancel(penalty){
+  if(!pendingCancel)return;const {dateKey,time}=pendingCancel;const arr=booked[CAB_IID]||[];
+  const ix=arr.findIndex(x=>x.date===dateKey&&x.time===time);if(ix<0)return;const b=arr[ix];arr.splice(ix,1);
+  (avail[CAB_IID][dateKey]=avail[CAB_IID][dateKey]||[]).push(time);
+  refundStudent(b,penalty);
+  if(penalty)tx.unshift({date:TODAY,st:b.student,ln:'Atcelšana <24h — kompensācija kursantam',amt:-5,status:'Ieturēts',penalty:true});
+  closeCancelModal();renderSchedBuilder();
+  toast(penalty?L('Atcelta · kursantam atmaksāts €'+b.price+' + €5 kompensācija','Cancelled · student refunded €'+b.price+' + €5 compensation'):L('Atcelta · kursantam atmaksāts €'+b.price,'Cancelled · student refunded €'+b.price));
+}
+function refundStudent(b,penalty){
+  const amt=b.price+(penalty?5:0);
+  if(b.student===user.name+' '+user.surname){
+    user.wallet+=amt;
+    userTx.unshift({date:TODAY,type:'Iemaksa',desc:'Atmaksa — atcelta nodarbība'+(penalty?' (+€5 kompensācija)':''),amt:amt});
+    userUpcoming=userUpcoming.filter(u=>!(u.date===b.date&&u.time===b.time));
+    if(document.getElementById('userDash').style.display!=='none')renderUser();
+  }
+}
+function showCancelModal(b,hrs){
+  const h=Math.max(0,Math.round(hrs));
+  document.getElementById('cx-text').textContent=L(
+    'Nodarbība ar '+b.student+' ('+b.date+' '+b.time+') sākas pēc ~'+h+'h. Atceļot mazāk kā 24h pirms sākuma, kursantam papildus tiek izmaksāti €5 no taviem neizmaksātajiem ienākumiem.',
+    'The lesson with '+b.student+' ('+b.date+' '+b.time+') starts in ~'+h+'h. Cancelling less than 24h before the start pays the student an extra €5 from your unpaid earnings.');
+  document.getElementById('cx-breakdown').innerHTML=
+    `<div class="confrow"><span>${L('Atmaksa kursantam (nodarbība)','Refund to student (lesson)')}</span><b>€${b.price.toFixed(2)}</b></div>
+     <div class="confrow"><span>${L('Kompensācija kursantam (−24h)','Compensation to student (−24h)')}</span><b style="color:var(--danger)">€5.00</b></div>
+     <div class="confrow" style="border:none"><span>${L('No taviem neizmaksātajiem ienākumiem','From your unpaid earnings')}</span><b style="color:var(--danger)">−€5.00</b></div>`;
+  document.getElementById('cxOverlay').classList.add('on');
+}
+function closeCancelModal(){document.getElementById('cxOverlay').classList.remove('on');pendingCancel=null;}
+function schedDates(iid){const base=dateList(14).map(d=>d.key);const extra=Object.keys(avail[iid]||{});return [...new Set([...base,...extra])].sort(sortDateKey);}
+function renderSchedBuilder(){
+  const iid=CAB_IID;const a=avail[iid]||(avail[iid]={});
+  document.getElementById('schedBuilder').innerHTML=schedDates(iid).map(k=>{
+    const d=parseKey(k);const we=isWe(k);const times=(a[k]||[]).slice().sort();
+    const palette=availableTimes(a[k]||[]);
+    const bk=(booked[iid]||[]).filter(b=>b.date===k).sort((x,y)=>toMin(x.time)-toMin(y.time));
+    const empty=!times.length&&!bk.length;
+    return `<div style="padding:13px 0;border-bottom:1px solid var(--line-soft)">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="min-width:160px"><b style="font-size:14px;color:${we?'var(--accent)':'var(--ink)'}">${WD_LV[d.getDay()]}</b>
+          <span class="muted" style="font-size:12.5px"> · ${k}</span></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;flex:1">
+          ${bk.map(b=>`<span class="slot" style="background:var(--ink);color:#fff;border-color:var(--ink);padding:7px 10px;display:inline-flex;gap:8px;align-items:center;cursor:default">🔒 ${b.time} · ${b.student.split(' ')[0]}<span onclick="askCancel('${k}','${b.time}')" title="Atcelt nodarbību" style="cursor:pointer;color:#ff9a8f;font-weight:800">×</span></span>`).join('')}
+          ${times.map(t=>`<span class="slot" style="padding:7px 10px;display:inline-flex;gap:7px;align-items:center;cursor:default">${t}<span onclick="removeSlot('${k}','${t}')" style="cursor:pointer;color:var(--danger);font-weight:800">×</span></span>`).join('')}
+          ${empty?'<span class="muted" style="font-size:12.5px;align-self:center">Nav laiku</span>':''}
+        </div>
+        <button class="btn ghost sm" onclick="togglePalette('${k}')">+ Laiks</button>
+      </div>
+      ${addPaletteFor===k?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding:11px;background:var(--surface-2);border-radius:11px">
+        ${palette.length?palette.map(t=>`<button class="chip" onclick="addSlot('${k}','${t}')">+ ${t}</button>`).join(''):'<span class="muted" style="font-size:12.5px">Visi laiki jau pievienoti šai dienai</span>'}
+      </div>`:''}
+    </div>`;}).join('');
+}
+function togglePalette(k){addPaletteFor=addPaletteFor===k?null:k;renderSchedBuilder();}
+function addSlot(k,t){(avail[CAB_IID][k]=avail[CAB_IID][k]||[]).push(t);renderSchedBuilder();}
+function removeSlot(k,t){if(avail[CAB_IID][k])avail[CAB_IID][k]=avail[CAB_IID][k].filter(x=>x!==t);renderSchedBuilder();}
+function addCustomDate(){const v=document.getElementById('newDay').value;if(!v){toast('Izvēlies datumu');return;}const p=v.split('-');const key=p[2]+'.'+p[1]+'.'+p[0];if(!avail[CAB_IID][key])avail[CAB_IID][key]=[];addPaletteFor=key;renderSchedBuilder();toast('Diena pievienota — izvēlies laikus');}
+
+/* ---------------- LESSONS & STUDENTS ---------------- */
+let lessons=[
+ {st:'Elīna Roze',init:'ER',col:'#0f766e',date:keyOff(-1),time:'11:00',cat:'B',n:12,ready:92,
+  comment:'Pilsētas brauciens ar lielu satiksmi — droša joslu maiņa, labi apļi. Gatava eksāmenam, atlicis tikai paralēlā stāvēšana zem laika spiediena.'},
+ {st:'Toms Bērziņš',init:'TB',col:'#c7483b',date:keyOff(-2),time:'14:00',cat:'B',n:8,ready:65,
+  comment:'Trenējām paralēlo stāvēšanu un gājēju pārejas. Jāuzlabo spoguļu izmantošana pirms joslu maiņas, mēdz aizmirst pārliecināties.'},
+ {st:'Kristaps Vītols',init:'KV',col:'#2563eb',date:keyOff(-4),time:'09:30',cat:'B',n:5,ready:40,
+  comment:'Pamatmanevri stāvlaukumā, uzsākšana kalnā. Vēl nedroši ar sajūgu, nākamreiz vairāk pilsētas vide.'},
+ {st:'Anna Līcīte',init:'AL',col:'#7c3aed',date:keyOff(-9),time:'16:00',cat:'B',n:2,ready:20,
+  comment:'Pirmās nodarbības — iepazīšanās ar auto, pedāļiem, pārnesumiem tukšā laukumā.'},
+ {st:'Toms Bērziņš',init:'TB',col:'#c7483b',date:keyOff(-33),time:'14:00',cat:'B',n:7,ready:60,
+  comment:'Apļveida krustojumi un prioritātes. Teorija laba, praksē mazliet vilcinās.'},
+];
+function readyColor(r){return r>=90?'var(--good)':r>=55?'var(--star)':'var(--accent)';}
+function readyLabel(r){return r>=90?'Gatavs eksāmenam':r>=55?'Vidēja gatavība':'Sākuma posms';}
+let lessonMonth='all';
+function renderLessonMonths(){
+  const ms=monthsOf(lessons);
+  document.getElementById('lessonMonths').innerHTML=
+    `<button class="chip ${lessonMonth==='all'?'on':''}" onclick="lessonMonth='all';renderLessons()">Visi mēneši</button>`+
+    ms.map(k=>`<button class="chip ${lessonMonth===k?'on':''}" onclick="lessonMonth='${k}';renderLessons()">${mLabel(k)}</button>`).join('');
+}
+function renderLessons(){
+  renderLessonMonths();
+  const html=lessons.map((l,ix)=>{
+    if(lessonMonth!=='all'&&mKey(l.date)!==lessonMonth)return '';
+    return `
+   <div class="card" style="padding:16px">
+     <div style="display:flex;align-items:center;gap:13px;cursor:pointer" onclick="toggleLesson(${ix})">
+       <div class="mini" style="width:40px;height:40px;border-radius:11px;background:${l.col};color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px">${l.init}</div>
+       <div style="flex:1;min-width:0">
+         <div style="font-weight:800;font-size:15px">${l.st}${permBadge(l.st)}</div>
+         <div class="muted" style="font-size:12.5px">${l.date} · ${l.time} · ${l.cat} kat. · ${l.n}. nodarbība</div>
+       </div>
+       <div style="text-align:right;min-width:116px">
+         <div style="font-size:11px;font-weight:700;color:${readyColor(l.ready)}">${readyLabel(l.ready)}</div>
+         <div style="height:6px;border-radius:99px;background:var(--line);margin-top:5px;overflow:hidden"><div style="height:100%;width:${l.ready}%;background:${readyColor(l.ready)}"></div></div>
+       </div>
+       <span style="color:var(--ink-faint);font-size:13px" id="lchev${ix}">▾</span>
+     </div>
+     <div id="lbody${ix}" style="display:none;margin-top:13px;border-top:1px solid var(--line-soft);padding-top:13px">
+       <label style="font-size:12px;font-weight:700;color:var(--ink-soft);display:block;margin-bottom:6px">Komentārs par nodarbību</label>
+       <textarea id="lcom${ix}" rows="3" style="width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:11px;outline:none;font-size:14px">${l.comment}</textarea>
+       <div style="display:flex;gap:16px;align-items:center;margin-top:10px;flex-wrap:wrap">
+         <label style="font-size:12px;font-weight:700;color:var(--ink-soft)">Gatavība: <span id="lrv${ix}">${l.ready}%</span></label>
+         <input type="range" min="0" max="100" value="${l.ready}" style="flex:1;min-width:140px;accent-color:var(--brand)" oninput="document.getElementById('lrv${ix}').textContent=this.value+'%';lessons[${ix}].ready=+this.value">
+         <button class="btn brand sm" onclick="saveLesson(${ix})">Saglabāt</button>
+       </div>
+     </div>
+   </div>`;}).join('');
+  document.getElementById('lessonList').innerHTML=html||'<p class="muted" style="padding:14px">Nav nodarbību šajā mēnesī.</p>';
+}
+function toggleLesson(ix){const b=document.getElementById('lbody'+ix),c=document.getElementById('lchev'+ix);
+  const open=b.style.display==='none';b.style.display=open?'block':'none';c.textContent=open?'▴':'▾';}
+function saveLesson(ix){lessons[ix].comment=document.getElementById('lcom'+ix).value;renderLessons();toast('Komentārs saglabāts');}
+
+/* ---------------- TRANSACTIONS / PAYOUTS ---------------- */
+const COMMISSION=0.10;
+let tx=[
+ {date:keyOff(-2),st:'Elīna Roze',ln:'12. nodarbība (B)',amt:22,status:'Pieejams'},
+ {date:keyOff(-3),st:'Toms Bērziņš',ln:'8. nodarbība (B)',amt:22,status:'Pieejams'},
+ {date:keyOff(-4),st:'Anna Līcīte',ln:'7. nodarbība (B)',amt:28,status:'Pieejams'},
+ {date:keyOff(-5),st:'Kristaps Vītols',ln:'5. nodarbība (B)',amt:22,status:'Pieejams'},
+ {date:keyOff(-7),st:'Anna Līcīte',ln:'2. nodarbība (B)',amt:22,status:'Izmaksāts'},
+ {date:keyOff(-12),st:'Elīna Roze',ln:'11. nodarbība (B)',amt:22,status:'Izmaksāts'},
+ {date:keyOff(-20),st:'Toms Bērziņš',ln:'6. nodarbība (B)',amt:22,status:'Izmaksāts'},
+ {date:keyOff(-28),st:'Kristaps Vītols',ln:'4. nodarbība (B)',amt:22,status:'Izmaksāts'},
+ {date:keyOff(-40),st:'Elīna Roze',ln:'10. nodarbība (B)',amt:22,status:'Izmaksāts'},
+ {date:keyOff(-52),st:'Anna Līcīte',ln:'1. nodarbība (B)',amt:22,status:'Izmaksāts'},
+ {date:keyOff(-63),st:'Kristaps Vītols',ln:'3. nodarbība (B)',amt:22,status:'Izmaksāts'},
+];
+function txTag(s){return s==='Pieejams'?'<span class="tag on">Pieejams</span>':
+  s==='Izmaksāts'?'<span class="tag off">Izmaksāts</span>':'<span class="tag adm">Gaida apmaksu</span>';}
+let txMonth='all';
+function renderTxMonths(){
+  const ms=monthsOf(tx);
+  document.getElementById('txMonths').innerHTML=
+    `<button class="chip ${txMonth==='all'?'on':''}" onclick="txMonth='all';renderTx()">Visi mēneši</button>`+
+    ms.map(k=>`<button class="chip ${txMonth===k?'on':''}" onclick="txMonth='${k}';renderTx()">${mLabel(k)}</button>`).join('');
+}
+function renderTx(){
+  renderTxMonths();
+  const rows=tx.filter(t=>txMonth==='all'||mKey(t.date)===txMonth);
+  let bruto=0,avail=0;
+  document.getElementById('txBody').innerHTML=rows.map(t=>{
+    if(t.penalty){return `<tr><td class="muted">${t.date}</td><td style="font-weight:700">${t.st}</td><td class="muted">${t.ln}</td>
+      <td class="muted">—</td><td class="muted">—</td>
+      <td style="font-family:var(--mono);font-weight:700;color:var(--danger)">−€5.00</td>
+      <td><span class="tag" style="background:#f6dcd8;color:var(--danger)">Ieturēts</span></td></tr>`;}
+    const com=t.amt*COMMISSION,net=t.amt-com;bruto+=t.amt;if(t.status==='Pieejams')avail+=net;
+    return `<tr><td class="muted">${t.date}</td><td style="font-weight:700">${t.st}</td><td class="muted">${t.ln}</td>
+      <td style="font-family:var(--mono)">€${t.amt.toFixed(2)}</td>
+      <td style="font-family:var(--mono);color:var(--danger)">−€${com.toFixed(2)}</td>
+      <td style="font-family:var(--mono);font-weight:700">€${net.toFixed(2)}</td>
+      <td>${txTag(t.status)}</td></tr>`;}).join('')||'<tr><td colspan="7" class="muted" style="text-align:center;padding:22px">Nav transakciju šajā mēnesī.</td></tr>';
+  rows.forEach(t=>{if(t.penalty)avail+=t.amt;});
+  const comm=bruto*COMMISSION,net=bruto-comm;
+  document.getElementById('kpiBruto').textContent='€'+bruto.toFixed(0);
+  document.getElementById('kpiCount').textContent=rows.length+' nodarbības';
+  document.getElementById('kpiComm').textContent='€'+comm.toFixed(0);
+  document.getElementById('kpiNet').textContent='€'+net.toFixed(0);
+  document.getElementById('kpiAvail').textContent='€'+avail.toFixed(0);
+  document.getElementById('txRange').textContent=txMonth==='all'?'Visi mēneši':mLabel(txMonth);
+  const btn=document.getElementById('payoutBtn');
+  btn.textContent=avail>0?('Pieprasīt izmaksu €'+avail.toFixed(0)):'Nav pieejamu izmaksu';
+  btn.disabled=avail<=0;btn.style.opacity=avail<=0?'.5':'1';
+}
+function requestPayout(){
+  tx.forEach(t=>{if(t.status==='Pieejams'&&(txMonth==='all'||mKey(t.date)===txMonth))t.status='Izmaksāts';});
+  renderTx();toast('Izmaksas pieprasījums nosūtīts — nauda saņemama 1–2 darba dienās');
+}
+
+/* ---------------- ADMIN PRODUCTS ---------------- */
+function adTab(n,el){document.querySelectorAll('#adTabs button').forEach(b=>b.classList.remove('on'));el.classList.add('on');
+  document.querySelectorAll('[id^=adp]').forEach((p,ix)=>p.classList.toggle('on',ix===n));}
+function renderProducts(){
+  const prods=[
+    {ic:'🚗',name:'Braukšanas nodarbības',desc:'Elektronisks grafiks, cenu nosaka instruktors',price:'20–28',unit:'/ 90 min',editable:false,on:true},
+    {ic:'🎁',name:'Pakalpojumu pakete',desc:'Teorija + 10 braukšanas + eksāmens',price:390,unit:'fiksēta cena',editable:true,on:true},
+  ];
+  document.getElementById('prodList').innerHTML=prods.map((o,ix)=>`
+    <div class="prod-toggle">
+      <div style="display:flex;gap:12px;align-items:center"><span style="font-size:22px">${o.ic}</span>
+        <div><div style="font-weight:800;font-size:15px">${o.name}</div>
+        <div class="muted" style="font-size:12.5px">${o.desc}</div></div></div>
+      <div style="display:flex;align-items:center;gap:12px">
+        ${o.editable?`<div style="display:flex;align-items:center;gap:6px"><input type="number" value="${o.price}" style="width:80px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;font-family:var(--mono);font-weight:700" onchange="toast('Cena atjaunināta')"><span style="font-weight:700">€</span></div>`
+          :`<span style="font-family:var(--mono);font-weight:700;font-size:14px">€${o.price}<span class="muted" style="font-size:11px;font-weight:500"> ${o.unit}</span></span>`}
+        <div class="switch ${o.on?'on':''}" onclick="this.classList.toggle('on');toast('${o.name}: redzamība atjaunināta')"></div>
+      </div>
+    </div>`).join('');
+  renderTheory();renderComm();
+}
+const theoryCats=[
+ {cat:'B',label:'Vieglais auto',price:149,on:true},
+ {cat:'A / A2',label:'Motocikls',price:159,on:true},
+ {cat:'BE',label:'Auto ar piekabi',price:129,on:true},
+ {cat:'C / CE',label:'Kravas auto',price:189,on:false},
+ {cat:'D',label:'Autobuss',price:219,on:false},
+];
+function renderTheory(){
+  document.getElementById('theoryBody').innerHTML=theoryCats.map((t,ix)=>`
+    <tr><td style="font-weight:800">${t.cat}</td><td class="muted">${t.label}</td>
+      <td><div style="display:flex;align-items:center;gap:5px"><input type="number" value="${t.price}" style="width:76px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;font-family:var(--mono);font-weight:700" onchange="toast('${t.cat} teorijas cena atjaunināta')"><span class="muted">€</span></div></td>
+      <td><div class="switch ${t.on?'on':''}" onclick="this.classList.toggle('on')"></div></td></tr>`).join('');
+}
+const commData=[
+ {name:'Jānis Kalniņš',cats:'B, BE',turnover:1820,pct:15},
+ {name:'Līga Ozola',cats:'B',turnover:1560,pct:15},
+ {name:'Andris Bērziņš',cats:'A, A2',turnover:980,pct:12},
+ {name:'Marta Liepa',cats:'B, C',turnover:1240,pct:18},
+];
+function renderComm(){
+  document.getElementById('commBody').innerHTML=commData.map((c,ix)=>`
+    <tr><td style="font-weight:700">${c.name}</td><td class="muted">${c.cats}</td>
+      <td style="font-family:var(--mono)">€${c.turnover.toLocaleString('lv')}</td>
+      <td><div style="display:flex;align-items:center;gap:4px"><input type="number" value="${c.pct}" style="width:62px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;font-family:var(--mono);font-weight:700" oninput="commData[${ix}].pct=+this.value;updateComm(${ix})"><span class="muted">%</span></div></td>
+      <td style="font-family:var(--mono);font-weight:700;color:var(--brand)" id="commVal${ix}">€${(c.turnover*c.pct/100).toFixed(0)}</td></tr>`).join('');
+}
+function updateComm(ix){document.getElementById('commVal'+ix).textContent='€'+(commData[ix].turnover*commData[ix].pct/100).toFixed(0);}
+
+/* ---------------- BOOKING ---------------- */
+function startBooking(){
+  if(!selectedSlot){toast('Vispirms izvēlies brīvu laiku grafikā');return;}
+  const weekend=isWe(currentDate), price='€'+(weekend?currentInstr.we:currentInstr.wd);
+  const d=parseKey(currentDate);
+  const when=WD_LV[d.getDay()]+', '+currentDate+' plkst. '+selectedSlot;
+  document.getElementById('bk-ins').textContent='Instruktors '+currentInstr.name;
+  document.getElementById('bk-r-ins').textContent=currentInstr.name;
+  document.getElementById('bk-r-time').textContent=when;
+  document.getElementById('bk-r-price').textContent=price;
+  document.getElementById('bk-d-ins').textContent=currentInstr.name;
+  document.getElementById('bk-d-time').textContent=when;
+  document.getElementById('bk-done').textContent='Apstiprinājums nosūtīts uz tavu e-pastu.';
+  document.getElementById('rv-ins').textContent=currentInstr.name;
+  bkStep(0);document.getElementById('bkOverlay').classList.add('on');
+}
+function bkStep(n){document.querySelectorAll('[id^=bk]').forEach(s=>{if(s.id.match(/^bk\d$/))s.classList.remove('on')});
+  document.getElementById('bk'+n).classList.add('on');
+  if(n===2)setTimeout(()=>bkStep(3),2000);
+  if(n===3)consumeSlot();}
+function consumeSlot(){const a=avail[currentInstr.id];if(a&&a[currentDate]){a[currentDate]=a[currentDate].filter(t=>t!==selectedSlot);}
+  (booked[currentInstr.id]=booked[currentInstr.id]||[]).push({date:currentDate,time:selectedSlot,student:user.name+' '+user.surname,price:isWe(currentDate)?currentInstr.we:currentInstr.wd,paid:true});}
+function closeBooking(){document.getElementById('bkOverlay').classList.remove('on');}
+function setStars(n){pickedStars=n;document.querySelectorAll('#starpick span').forEach((s,ix)=>s.classList.toggle('on',ix<n));}
+function submitReview(){
+  seedReviews.unshift({who:'Tu',init:'TU',col:'#e8863b',stars:pickedStars,text:document.getElementById('rvText').value||'Lieliska nodarbība!',reply:null});
+  closeBooking();toast('Paldies! Tava atsauksme publicēta');
+  if(document.getElementById('view-instr').classList.contains('on'))renderReviews('ins-reviews',false);
+}
+
+/* ---------------- AI CHAT ---------------- */
+function aiSuggList(){return LANG==='en'
+  ?['Which instructor is available tomorrow in central Riga?','How much is a category B driving lesson?','How does registration work?']
+  :['Kurš instruktors rīt pieejams Rīgas centrā?','Cik maksā B kategorijas braukšanas nodarbība?','Kā notiek reģistrācija?'];}
+function openAI(){document.getElementById('aiPanel').classList.add('on');document.getElementById('aiFab').style.display='none';
+  if(!document.getElementById('aiBody').dataset.init){
+    aiBot(L('Sveiks! 👋 Esmu autoskolu AI asistents. Varu atbildēt par autoskolām, kategorijām, cenām un instruktoru pieejamiem laikiem — un pat uzreiz rezervēt nodarbību. Ko vēlies uzzināt?',"Hi! 👋 I'm the driving-school AI assistant. I can answer questions about schools, categories, prices and instructor availability — and even book a lesson right away. What would you like to know?"));
+    document.getElementById('aiBody').dataset.init='1';
+    document.getElementById('aiSugg').innerHTML=aiSuggList().map(s=>`<button onclick="aiAsk('${s.replace(/'/g,"")}')">${s}</button>`).join('');
+  }}
+function closeAI(){document.getElementById('aiPanel').classList.remove('on');document.getElementById('aiFab').style.display='flex';}
+function aiBot(html){const b=document.getElementById('aiBody');const m=document.createElement('div');m.className='msg bot';m.innerHTML=html;b.appendChild(m);b.scrollTop=b.scrollHeight;}
+function aiUser(t){const b=document.getElementById('aiBody');const m=document.createElement('div');m.className='msg user';m.textContent=t;b.appendChild(m);b.scrollTop=b.scrollHeight;}
+function aiTyping(){const b=document.getElementById('aiBody');const m=document.createElement('div');m.className='msg bot typing';m.id='typing';m.innerHTML='<span></span><span></span><span></span>';b.appendChild(m);b.scrollTop=b.scrollHeight;}
+function aiSend(){const i=document.getElementById('aiInput');if(!i.value.trim())return;aiAsk(i.value);i.value='';}
+function aiAsk(t){aiUser(t);aiTyping();setTimeout(()=>{document.getElementById('typing')?.remove();aiAnswer(t.toLowerCase());},1100);}
+function aiAnswer(q){
+  if(/rīt|pieejam|centr|instruktor|tomorrow|available|instructor/.test(q)){
+    aiBot(L('Rīt Rīgas centrā B kategorijā pieejami <b>2 instruktori</b>. Vari rezervēt uzreiz šeit:','Tomorrow in central Riga there are <b>2 instructors</b> available for category B. You can book right here:'));
+    aiInsCard('jkalnins','11:00 · €22');aiInsCard('lozola','14:00 · €20');return;}
+  if(/cen|maks|price|cost/.test(q)){
+    aiBot(L('B kategorijas braukšanas nodarbība (90 min): <b>€20–22 darbdienās</b> un <b>€26–28 brīvdienās</b>, atkarībā no instruktora. Teorijas kurss ~€149, pilna pakete ~€390. Vēlies redzēt konkrētu instruktoru?','A category B driving lesson (90 min): <b>€20–22 on weekdays</b> and <b>€26–28 on weekends</b>, depending on the instructor. Theory course ~€149, full package ~€390. Want to see a specific instructor?'));return;}
+  if(/reģistr|registr|līgum|ligum|registration|contract|sign/.test(q)){
+    aiBot(L('Reģistrācija notiek pilnībā attālināti: izvēlies autoskolu, autorizējies ar <b>Smart-ID</b>, un līgums tiek noslēgts elektroniski. Pēc tam uzreiz vari sākt teoriju un rezervēt braukšanas nodarbības.','Registration is fully remote: choose a school, authenticate with <b>Smart-ID</b>, and the contract is signed electronically. Then you can start theory and book driving lessons right away.'));return;}
+  if(/teor|eksām|eksam|theory|exam/.test(q)){
+    aiBot(L('Teorijas kursu var apgūt tālmācībā, un platforma izmanto <b>Presto tematisko uzdevumu krājumu</b> labākai sagatavotībai CSDD eksāmenam. Gribi redzēt autoskolas ar spēcīgāko teorijas statistiku?','Theory can be studied remotely, and the platform uses the <b>Presto topic exercise set</b> for better CSDD exam preparation. Want to see schools with the strongest theory stats?'));return;}
+  aiBot(L('Varu palīdzēt ar autoskolu izvēli, kategorijām, cenām, reģistrāciju un instruktoru pieejamību. Pamēģini, piemēram: <i>"Kurš instruktors rīt pieejams Rīgas centrā?"</i>','I can help with choosing a school, categories, prices, registration and instructor availability. Try, for example: <i>"Which instructor is available tomorrow in central Riga?"</i>'));
+}
+function aiInsCard(iid,meta){const i=instructors[iid];const b=document.getElementById('aiBody');
+  const d=document.createElement('div');d.className='msg bot';d.style.padding='8px';
+  d.innerHTML=`<div class="ai-ins"><div class="mini" style="background:${i.col}">${i.init}</div>
+    <div><h5>${i.name}</h5><div class="sm">${i.area} · ${meta} · ★${i.rating}</div></div>
+    <button class="bk" onclick="closeAI();viewInstructor('${iid}','${i.school}')">${L('Rezervēt','Book')}</button></div>`;
+  b.appendChild(d);b.scrollTop=b.scrollHeight;}
+
+/* ---------------- UTIL ---------------- */
+function carSVG(c,n){const t=['#ffffff22','#00000014','#ffffff18'][n];
+  return `<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice"><rect width="200" height="200" fill="${c}"/><rect width="200" height="200" fill="${t}"/>
+  <g transform="translate(100,110)" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="${n===0?.95:.8}">
+  <path d="M-55 10 h110 M-45 10 l10 -30 a14 14 0 0 1 13 -9 h34 a14 14 0 0 1 13 9 l10 30"/>
+  <circle cx="-32" cy="10" r="11" fill="#ffffff22"/><circle cx="32" cy="10" r="11" fill="#ffffff22"/></g>
+  ${n===0?'<text x="16" y="30" fill="#ffffffcc" font-size="12" font-family="monospace" font-weight="700">AUTO · GALERIJA</text>':''}</svg>`;}
+function toast(m){const t=document.getElementById('toast');t.textContent=(LANG==='en'&&typeof EXACT!=='undefined'&&EXACT[m])?EXACT[m]:m;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(window._tt);window._tt=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(20px)';},2200);}
+
+/* ---------------- INSTRUCTOR DIRECTORY ---------------- */
+let insCityF='',insCatF='';
+function goInstructors(){document.querySelectorAll('#roles button').forEach(b=>b.classList.toggle('on',b.dataset.role==='public'));show('view-instructors');renderInstructorsDir();}
+function renderInstructorsDir(){
+  const all=Object.values(instructors);
+  const cities=[...new Set(all.map(i=>i.city))];
+  const cats=[...new Set(all.flatMap(i=>i.cats))].sort();
+  document.getElementById('insCity').innerHTML=
+    `<button class="chip ${insCityF===''?'on':''}" onclick="insCityF='';renderInstructorsDir()">Visas</button>`+
+    cities.map(c=>`<button class="chip ${insCityF===c?'on':''}" onclick="insCityF='${c}';renderInstructorsDir()">${c}</button>`).join('');
+  document.getElementById('insCat').innerHTML=
+    `<button class="chip ${insCatF===''?'on':''}" onclick="insCatF='';renderInstructorsDir()">Visas</button>`+
+    cats.map(c=>`<button class="chip ${insCatF===c?'on':''}" onclick="insCatF='${c}';renderInstructorsDir()">${c}</button>`).join('');
+  const q=(document.getElementById('iq').value||'').toLowerCase();
+  const list=all.filter(i=>(insCityF===''||i.city===insCityF)&&(insCatF===''||i.cats.includes(insCatF))&&(i.name.toLowerCase().includes(q)||i.city.toLowerCase().includes(q)));
+  const sch=id=>schools.find(s=>s.id===id);
+  document.getElementById('instrDir').innerHTML=list.map(i=>`
+    <div class="card" style="padding:18px;cursor:pointer;display:flex;flex-direction:column;gap:13px" onclick="viewInstructor('${i.id}','${i.school}')">
+      <div style="display:flex;align-items:center;gap:13px">
+        <div class="avatar" style="background:${i.col};width:52px;height:52px;font-size:18px">${i.init}</div>
+        <div style="flex:1"><h4 style="font-size:16px;font-weight:800">${i.name}</h4>
+          <div class="muted" style="font-size:12.5px">📍 ${i.area} · ${sch(i.school).name}</div></div>
+        <span class="rating" style="font-size:14px"><span class="s">★</span>${i.rating}</span>
+      </div>
+      <div class="cats" style="display:flex;gap:5px;flex-wrap:wrap">${i.cats.map(c=>`<span class="pill cat">${c}</span>`).join('')}</div>
+      <div style="display:flex;justify-content:space-between;border-top:1px solid var(--line-soft);padding-top:12px;margin-top:auto">
+        <div><div class="muted" style="font-size:11px">No cenas</div><div style="font-family:var(--mono);font-weight:800;font-size:16px">€${i.wd}</div></div>
+        <div style="text-align:center"><div class="muted" style="font-size:11px">Nodarbības</div><div style="font-weight:800;font-size:16px">${i.lessons}</div></div>
+        <div style="text-align:center"><div class="muted" style="font-size:11px">Atsauksmes</div><div style="font-weight:800;font-size:16px">${i.rev}</div></div>
+        <button class="btn brand sm" onclick="event.stopPropagation();viewInstructor('${i.id}','${i.school}')">Pieteikties →</button>
+      </div>
+    </div>`).join('')||'<p class="muted">Nav instruktoru ar šādiem filtriem.</p>';
+}
+
+/* ---------------- USER PANEL ---------------- */
+const user={name:'Rihards',surname:'Caune',pk:'31029012345',email:'rihards.caune@example.lv',phone:'+371 26 123 456',wallet:40,init:'RC',permit:'none'};
+let userUpcoming=[
+ {instr:'Jānis Kalniņš',col:'#0f766e',date:SOON.date,time:SOON.time,cat:'B',price:22,paid:true},
+ {instr:'Jānis Kalniņš',col:'#0f766e',date:keyOff(5),time:'15:30',cat:'B',price:28,paid:false},
+ {instr:'Līga Ozola',col:'#c7483b',date:keyOff(9),time:'09:30',cat:'B',price:20,paid:false},
+];
+let userPast=[
+ {instr:'Jānis Kalniņš',col:'#0f766e',init:'JK',date:keyOff(-3),time:'11:00',cat:'B',n:3,comment:'Labs progress ar joslu maiņu. Nākamreiz vairāk uzmanības gājēju pārejām.'},
+ {instr:'Jānis Kalniņš',col:'#0f766e',init:'JK',date:keyOff(-10),time:'11:00',cat:'B',n:2,comment:'Pamatmanevri stāvlaukumā nostrādāti labi, sajūgs vēl mazliet nedroši.'},
+ {instr:'Jānis Kalniņš',col:'#0f766e',init:'JK',date:keyOff(-17),time:'11:00',cat:'B',n:1,comment:'Pirmā nodarbība — iepazīšanās ar auto, pedāļiem un vadības ierīcēm.'},
+];
+let userTx=[
+ {date:keyOff(-2),type:'Iemaksa',desc:'Maciņa papildināšana',amt:40},
+ {date:keyOff(-3),type:'Nodarbība',desc:'J. Kalniņš · 3. nodarbība',amt:-22},
+ {date:keyOff(-10),type:'Nodarbība',desc:'J. Kalniņš · 2. nodarbība',amt:-22},
+ {date:keyOff(-15),type:'Iemaksa',desc:'Maciņa papildināšana',amt:50},
+ {date:keyOff(-17),type:'Nodarbība',desc:'J. Kalniņš · 1. nodarbība',amt:-22},
+];
+let userLoginHTML='';
+function smartLogin(){
+  const l=document.getElementById('userLogin');
+  l.querySelector('.card').innerHTML='<div class="smartid"><p style="font-weight:700">Nolasa datus no Smart-ID…</p><p class="muted" style="font-size:13px">Pārbaudiet kontrolkodu lietotnē</p><div class="code">7391</div><div class="spinner"></div><p class="muted" style="font-size:13px">Gaida apstiprinājumu…</p></div>';
+  setTimeout(()=>{document.getElementById('userLogin').style.display='none';document.getElementById('userDash').style.display='block';renderUser();toast('Autorizēts ar Smart-ID');},1700);
+}
+function smartLogout(){document.getElementById('userDash').style.display='none';const l=document.getElementById('userLogin');l.style.display='block';l.innerHTML=userLoginHTML;}
+function renderUser(){
+  document.getElementById('u-av').textContent=user.init;
+  document.getElementById('u-name').textContent=user.name+' '+user.surname;
+  document.getElementById('u-pk').textContent=user.pk;
+  document.getElementById('u-f-name').value=user.name;
+  document.getElementById('u-f-surname').value=user.surname;
+  document.getElementById('u-f-pk').value=user.pk;
+  document.getElementById('u-f-email').value=user.email;
+  document.getElementById('u-f-phone').value=user.phone;
+  renderWallet();renderUnpaid();renderUpcoming();renderPast();renderUserTx();renderPermit();
+}
+function uTab(n,el){document.querySelectorAll('#uTabs button').forEach(b=>b.classList.remove('on'));el.classList.add('on');
+  document.querySelectorAll('[id^=up]').forEach((p,ix)=>p.classList.toggle('on',ix===n));}
+function renderWallet(){const v='€'+user.wallet.toFixed(0);document.getElementById('u-wallet-big').textContent=v;document.getElementById('u-wallet-chip').textContent=v;}
+function addFunds(n){user.wallet+=n;userTx.unshift({date:TODAY,type:'Iemaksa',desc:'Maciņa papildināšana',amt:n});renderWallet();renderUserTx();toast(L('Maciņš papildināts par €'+n,'Wallet topped up by €'+n));}
+function addFundsCustom(){const i=document.getElementById('u-topup');const n=+i.value;if(n>0){addFunds(n);i.value='';}else toast('Ievadi summu');}
+function payLesson(ix){const l=userUpcoming[ix];if(l.paid)return;
+  if(user.wallet>=l.price){user.wallet-=l.price;l.paid=true;userTx.unshift({date:TODAY,type:'Nodarbība',desc:l.instr.split(' ')[0][0]+'. '+l.instr.split(' ')[1]+' · '+l.date,amt:-l.price});
+    renderWallet();renderUnpaid();renderUpcoming();renderUserTx();toast('Nodarbība apmaksāta no maciņa');}
+  else toast('Nepietiek līdzekļu — papildini maciņu');}
+function uLessonRow(l,ix,showPay){return `
+  <div class="card" style="padding:15px;display:flex;align-items:center;gap:13px;flex-wrap:wrap">
+    <div class="mini" style="width:40px;height:40px;border-radius:11px;background:${l.col};color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px">${l.instr.split(' ').map(w=>w[0]).join('')}</div>
+    <div style="flex:1;min-width:120px"><div style="font-weight:800;font-size:14.5px">${l.instr}</div>
+      <div class="muted" style="font-size:12.5px">${l.date} · ${l.time} · ${l.cat} kat.</div></div>
+    <div style="font-family:var(--mono);font-weight:700">€${l.price}</div>
+    ${l.paid?'<span class="tag on">Apmaksāta</span>':(showPay?`<button class="btn brand sm" onclick="payLesson(${ix})">Apmaksāt no maciņa</button>`:'<span class="tag adm">Jāapmaksā</span>')}
+  </div>`;}
+function renderUnpaid(){const un=userUpcoming.map((l,ix)=>({l,ix})).filter(o=>!o.l.paid);
+  document.getElementById('u-unpaid').innerHTML=un.length?un.map(o=>uLessonRow(o.l,o.ix,true)).join(''):'<p class="muted" style="padding:6px">Visas nodarbības apmaksātas 🎉</p>';}
+function renderUpcoming(){document.getElementById('u-upcoming').innerHTML=userUpcoming.map((l,ix)=>uLessonRow(l,ix,true)).join('');}
+function renderPast(){document.getElementById('u-past').innerHTML=userPast.map(l=>`
+  <div class="card" style="padding:16px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+      <div class="mini" style="width:38px;height:38px;border-radius:11px;background:${l.col};color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px">${l.init}</div>
+      <div style="flex:1"><div style="font-weight:800;font-size:14.5px">${l.instr}</div>
+        <div class="muted" style="font-size:12.5px">${l.date} · ${l.time} · ${l.cat} kat. · ${l.n}. nodarbība</div></div>
+      <span class="tag off">Pabeigta</span>
+    </div>
+    <div class="reply" style="margin-top:0;padding:12px 14px;border-radius:11px;background:var(--brand-l);border-left:3px solid var(--brand);font-size:13.5px">
+      <b style="color:var(--brand-d);display:block;font-size:12px;margin-bottom:3px">Instruktora komentārs</b>${l.comment}</div>
+  </div>`).join('');}
+function renderUserTx(){document.getElementById('u-tx').innerHTML=userTx.map(t=>`
+  <tr><td class="muted">${t.date}</td>
+    <td>${t.amt>0?'<span class="tag on">Iemaksa</span>':'<span class="tag off">Nodarbība</span>'}</td>
+    <td>${t.desc}</td>
+    <td style="text-align:right;font-family:var(--mono);font-weight:700;color:${t.amt>0?'var(--good)':'var(--ink)'}">${t.amt>0?'+':'−'}€${Math.abs(t.amt).toFixed(2)}</td></tr>`).join('');}
+function saveUserProfile(){user.email=document.getElementById('u-f-email').value;user.phone=document.getElementById('u-f-phone').value;toast('Profils saglabāts');}
+function renderPermit(){
+  const s=user.permit;
+  const map={none:['Atļauja nav augšupielādēta','#f0ece2','var(--ink-faint)','⚠ '],pending:['Atļauja gaida pārbaudi','var(--accent-l)','#9a5a1d','⏳ '],verified:['Mācību atļauja pārbaudīta','var(--brand-l)','var(--brand-d)','✓ ']};
+  const m=map[s];
+  document.getElementById('u-permit-chip').innerHTML=`<span class="pill" style="background:${m[1]};border-color:transparent;color:${m[2]};font-size:13px;padding:8px 12px">${m[3]}${m[0]}</span>`;
+  const card=document.getElementById('permitCard');
+  if(s==='none'){
+    card.innerHTML=`<div class="card" style="padding:24px;border:2px dashed var(--line);text-align:center">
+      <div style="font-size:32px">📄</div>
+      <div style="font-weight:800;margin:8px 0 4px">Augšupielādē braukšanas mācību atļauju</div>
+      <p class="muted" style="font-size:13px;max-width:48ch;margin:0 auto 16px">Lai instruktors varētu pārliecināties, ka tev ir tiesības mācīties braukt, pievieno CSDD izsniegto mācību atļauju (PDF vai foto).</p>
+      <button class="btn brand sm" onclick="uploadPermit()">Izvēlēties failu</button>
+    </div>`;
+  } else {
+    card.innerHTML=`<div class="card" style="padding:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="width:46px;height:46px;border-radius:12px;background:var(--brand-l);color:var(--brand-d);display:grid;place-items:center;font-size:21px">📄</div>
+      <div style="flex:1;min-width:160px"><div style="font-weight:800;font-size:14.5px">macibu_atlauja.pdf</div>
+        <div class="muted" style="font-size:12.5px">Augšupielādēts ${TODAY} · 240 KB</div></div>
+      ${s==='pending'?'<span class="tag adm">⏳ Gaida pārbaudi</span>':'<span class="tag on">✓ Pārbaudīta</span>'}
+      <button class="btn ghost sm" onclick="uploadPermit()">Aizstāt failu</button>
+    </div>
+    ${s==='verified'?'<p class="note" style="margin-top:12px">Instruktors tavā rezervācijā redz, ka mācību atļauja ir pārbaudīta.</p>':'<p class="note" style="margin-top:12px">Atļauja nosūtīta pārbaudei — parasti apstiprina dažu minūšu laikā.</p>'}`;
+  }
+}
+function uploadPermit(){
+  user.permit='pending';renderPermit();toast('Atļauja augšupielādēta — gaida pārbaudi');
+  setTimeout(()=>{user.permit='verified';renderPermit();toast('Mācību atļauja apstiprināta ✓');},2200);
+}
+/* instruktors redz kursanta atļaujas statusu */
+const studentPermit={'Elīna Roze':'verified','Toms Bērziņš':'verified','Kristaps Vītols':'verified','Anna Līcīte':'pending'};
+function permBadge(name){const s=studentPermit[name]||'verified';
+  return s==='verified'
+    ?'<span class="verif" style="font-size:10.5px;margin-left:8px">✓ Atļauja pārbaudīta</span>'
+    :'<span style="font-size:10.5px;font-weight:700;color:var(--accent);margin-left:8px">⏳ Atļauja gaidīšanā</span>';}
+
+/* ---------------- I18N (LV ↔ EN) ---------------- */
+const EXACT={
+ /* chrome */
+ 'Autoskolas':'Driving schools','SaaS platforma':'SaaS platform','Publiskais skats':'Public view','Lietotāja panelis':'User panel','Instruktora kabinets':'Instructor dashboard','Autoskolas kabinets':'Driving school dashboard','DEMO prototips':'DEMO prototype','Instruktori':'Instructors',
+ /* hero + catalog */
+ 'Vienota platforma 200 autoskolām':'One platform for 200 driving schools','Modernas IT iespējas arī mazajām autoskolām':'Modern IT tools for small driving schools too','CRM, attālināta līgumu slēgšana, elektroniska braukšanas grafiku organizācija un mācību rīki — pieejami kā abonements, bez sava IT budžeta.':'CRM, remote contract signing, electronic lesson scheduling and learning tools — available as a subscription, with no IT budget of your own.','autoskolas Latvijā':'driving schools in Latvia','ar savu IT sistēmu':'with their own IT system','potenciālais tirgus':'potential market','Izveidot autoskolas profilu':'Create a school profile','Pamēģināt AI čatu':'Try the AI chat','Visas':'All','Demo: rāda reālas autoskolas no autoskolas.com kataloga. Katrai ir publisks profils ar piedāvājumu un instruktoriem.':'Demo: shows real driving schools from the autoskolas.com catalogue. Each has a public profile with its offer and instructors.','Skatīt profilu →':'View profile →','Nav rezultātu.':'No results.',
+ /* school profile */
+ 'Piedāvājums pa kategorijām':'Offer by category','Jautāt AI asistentam':'Ask the AI assistant',
+ 'Reģistrācija':'Registration','Teorija':'Theory','Braukšanas nodarbības':'Driving lessons','Pakalpojumu pakete':'Service package',
+ 'Attālināta līguma slēgšana ar Smart-ID.':'Remote contract signing with Smart-ID.','Tālmācība + Presto tematiskie uzdevumi.':'Distance learning + Presto topic exercises.','Elektronisks grafiks, cena pie instruktora.':'Electronic schedule, price set by the instructor.','Teorija + 10 braukšanas + eksāmens.':'Theory + 10 lessons + exam.','bez maksas':'free','fiksēta cena':'fixed price',
+ 'Apmācība 3 valodās un plašākais tālmācības programmu klāsts Latvijā. Regulāri 1. vieta CSDD teorijas eksāmenu rezultātos. Fokuss — mazāks laiks un izmaksas ceļā līdz vadītāja apliecībai.':'Training in 3 languages and the widest range of distance-learning programmes in Latvia. Regularly ranked 1st in CSDD theory exam results. Focus — less time and cost on the way to a licence.',
+ 'Vadītāju apmācība AM, A, B, BE, C un CE kategorijās visā Latvijā — latviešu, krievu un angļu valodā. Mūsdienīga, digitāla pieeja un ātri uzsākams mācību process.':'Driver training in AM, A, B, BE, C and CE categories across Latvia — in Latvian, Russian and English. A modern, digital approach and a quick-to-start learning process.',
+ 'Viena no lielākajām autoskolām Latvijā ar 25 gadu pieredzi. Teorijas apguve gan klātienē, gan online, ar filiālēm desmit Latvijas pilsētās.':'One of the largest driving schools in Latvia with 25 years of experience. Theory both in person and online, with branches in ten Latvian cities.',
+ 'A, B un BE kategorijas apmācība Rīgā un Daugavpilī latviešu un krievu valodā. Klasiska pieeja apvienota ar digitāliem risinājumiem.':'Category A, B and BE training in Riga and Daugavpils in Latvian and Russian. A classic approach combined with digital solutions.',
+ 'B un A/A2 kategorijas apmācība Rīgā, Jelgavā un Ogrē. Digitālā mācību ekosistēma — virtuālie braucieni, video saturs un teorijas treniņu platforma.':'Category B and A/A2 training in Riga, Jelgava and Ogre. A digital learning ecosystem — virtual drives, video content and a theory practice platform.',
+ 'Mūsdienīga mācību organizācija un elastīga pieeja. 2024. gadā apvienojusies ar Braukšanas akadēmiju, veidojot paplašinātu apmācību modeli.':'Modern lesson organisation and a flexible approach. Merged with Braukšanas akadēmija in 2024 to create an expanded training model.',
+ /* instructor directory + profile */
+ 'Visi instruktori vienuviet':'All instructors in one place','Atrodi savu braukšanas instruktoru':'Find your driving instructor','Šķiro pēc pilsētas un kategorijas, salīdzini cenas, statistiku un atsauksmes — un piesakies tieši pie izvēlētā instruktora.':'Filter by city and category, compare prices, stats and reviews — and apply directly to the instructor you choose.','Pilsēta':'City','Kategorija':'Category','Nav instruktoru ar šādiem filtriem.':'No instructors match these filters.','No cenas':'From','Nodarbības':'Lessons','Atsauksmes':'Reviews','Pieteikties →':'Apply →',
+ 'Braukšanas grafiks':'Driving schedule','Izvēlies dienu':'Choose a day','Instruktors vēl nav pievienojis brīvus laikus.':'The instructor has not added any free slots yet.','Šajā dienā nav brīvu laiku.':'No free slots on this day.','Cena / 90 min':'Price / 90 min','Darbdienas cena':'Weekday price','Brīvdienas cena':'Weekend price','Darbdienās un brīvdienās atsevišķa cena — kā Presto sistēmā.':'Separate weekday and weekend price — like the Presto system.','Rezervēt nodarbību':'Book a lesson','Rezervācijai nepieciešama autorizācija ar Smart-ID.':'Booking requires Smart-ID authentication.','Atsauksmes par darījumiem':'Transaction reviews','✓ Darījums apstiprināts':'✓ Transaction verified','Instruktora atbilde':'Instructor reply','Atbildēt':'Reply','Publicēt atbildi':'Publish reply','Tava atbilde…':'Your reply…','Paldies par atsauksmi!':'Thanks for the review!',
+ 'Ļoti profesionāls instruktors, nokārtoju eksāmenu pirmajā reizē!':'Very professional instructor, I passed the exam on the first try!','Paldies, Elīna! Prieks par tavu rezultātu 🚗':'Thank you, Elīna! So glad about your result 🚗','Mierīgs un pacietīgs. Ieteiktu ikvienam, kas baidās no satiksmes.':"Calm and patient. I'd recommend him to anyone nervous about traffic.",'Labas nodarbības, elastīgs ar laikiem. Rezervēšana caur platformu ļoti ērta.':'Great lessons, flexible with times. Booking through the platform is very convenient.',
+ /* booking modal */
+ 'Rezervēt braukšanas nodarbību':'Book a driving lesson','Laiks':'Time','Ilgums':'Duration','Cena':'Price','Instruktors':'Instructor','Turpināt ar Smart-ID':'Continue with Smart-ID','Autorizācija ar Smart-ID':'Smart-ID authentication','Nosūtīt pieprasījumu':'Send request','Demo: reālā versijā šeit notiek Smart-ID autentifikācija.':'Demo: in the real version Smart-ID authentication happens here.','Apstipriniet Smart-ID lietotnē':'Confirm in the Smart-ID app','Pārliecinieties, ka kontrolkods sakrīt:':'Make sure the control code matches:','Gaida apstiprinājumu…':'Waiting for confirmation…','Nodarbība rezervēta!':'Lesson booked!','Apstiprinājums':'Confirmation','e-pastā un lietotnē':'by email and in the app','Pēc nodarbības varēsi atstāt atsauksmi par instruktoru.':'After the lesson you can leave a review of the instructor.','⏩ Simulēt pabeigtu nodarbību → atstāt atsauksmi':'⏩ Simulate completed lesson → leave a review','Aizvērt':'Close','Atstāt atsauksmi':'Leave a review','Ļoti mierīga un skaidra pieeja, jutos droši jau no pirmās nodarbības.':'Very calm and clear approach, I felt safe from the very first lesson.','Publicēt atsauksmi':'Publish review','Atsauksmi var atstāt tikai lietotājs ar reālu, pabeigtu darījumu — tas nodrošina autentiskumu.':'Only a user with a real, completed transaction can leave a review — this ensures authenticity.','Lieliska nodarbība!':'Great lesson!','Apstiprinājums nosūtīts uz tavu e-pastu.':'Confirmation sent to your email.','90 min':'90 min',
+ /* cancel modal */
+ 'Atcelt mazāk kā 24h pirms sākuma?':'Cancel less than 24h before start?','Atcelt un izmaksāt kompensāciju':'Cancel and pay compensation','Paturēt nodarbību':'Keep lesson',
+ /* instructor cabinet */
+ 'Skatīt publisko profilu →':'View public profile →','Grafiks un cenas':'Schedule & prices','Nodarbības un kursanti':'Lessons & students','Norēķini':'Billing','Publiskais profils':'Public profile',
+ 'Šonedēļ rezervēts':'Booked this week','+3 pret pagājušo':'+3 vs last week','Brīvie laiki':'Free slots','nākamajās 7 dienās':'in the next 7 days','Vidējais vērtējums':'Average rating','38 atsauksmes':'38 reviews','Ieņēmumi (mēn.)':'Revenue (mo.)','+12%':'+12%','Cena darbdienās (€ / 90 min)':'Weekday price (€ / 90 min)','Cena brīvdienās (€ / 90 min)':'Weekend price (€ / 90 min)','Mans nodarbību grafiks':'My lesson schedule','Pievieno konkrētas dienas un laikus, kad esi pieejams. Katra diena var atšķirties.':'Add specific days and times when you are available. Each day can differ.','+ Pievienot dienu':'+ Add day','Saglabāt grafiku':'Save schedule','Nav laiku':'No times','Visi laiki jau pievienoti šai dienai':'All times already added for this day','+ Laiks':'+ Time',
+ 'Aktīvie kursanti':'Active students','pašlaik apmācībā':'currently training','Pavadītās nodarbības':'Lessons given','+14 šomēnes':'+14 this month','Gatavi eksāmenam':'Exam-ready','≥ 90% gatavība':'≥ 90% readiness','Iepriekšējās nodarbības':'Past lessons','Klikšķini nodarbību, lai pievienotu/rediģētu komentāru':'Click a lesson to add/edit a comment','Visi mēneši':'All months','Komentārs par nodarbību':'Lesson comment','Saglabāt':'Save','Nav nodarbību šajā mēnesī.':'No lessons this month.',
+ 'Pilsētas brauciens ar lielu satiksmi — droša joslu maiņa, labi apļi. Gatava eksāmenam, atlicis tikai paralēlā stāvēšana zem laika spiediena.':'City drive in heavy traffic — safe lane changes, good roundabouts. Exam-ready, only parallel parking under time pressure remains.','Trenējām paralēlo stāvēšanu un gājēju pārejas. Jāuzlabo spoguļu izmantošana pirms joslu maiņas, mēdz aizmirst pārliecināties.':'Practised parallel parking and pedestrian crossings. Needs to improve mirror use before lane changes, tends to forget to check.','Pamatmanevri stāvlaukumā, uzsākšana kalnā. Vēl nedroši ar sajūgu, nākamreiz vairāk pilsētas vide.':'Basic manoeuvres in the lot, hill starts. Still unsure with the clutch, next time more city driving.','Pirmās nodarbības — iepazīšanās ar auto, pedāļiem, pārnesumiem tukšā laukumā.':'First lessons — getting to know the car, pedals and gears in an empty lot.','Apļveida krustojumi un prioritātes. Teorija laba, praksē mazliet vilcinās.':'Roundabouts and priorities. Theory is good, hesitates a little in practice.',
+ 'Nopelnīts (bruto)':'Earned (gross)','Platformas komisija':'Platform commission','10% no apgrozījuma':'10% of turnover','Neto (tev)':'Net (yours)','pēc komisijas':'after commission','Pieejams izmaksai':'Available for payout','apstiprinātie maksājumi':'confirmed payments','Transakcijas':'Transactions','Nav pieejamu izmaksu':'No payouts available','Datums':'Date','Kursants':'Student','Nodarbība':'Lesson','Summa':'Amount','Komisija':'Commission','Neto':'Net','Statuss':'Status','Pieejams':'Available','Izmaksāts':'Paid out','Gaida apmaksu':'Awaiting payment','Ieturēts':'Withheld','Platforma iekasē maksājumus no kursantiem, ietur komisiju un pārskaita neto summu instruktoram pēc izmaksas pieprasījuma.':'The platform collects payments from students, deducts commission and transfers the net amount to the instructor after a payout request.','Nav transakciju šajā mēnesī.':'No transactions this month.',
+ 'Vārds, uzvārds':'Full name','Pilsēta / rajons':'City / district','Galvenais attēls':'Main photo','Augšupielādēt attēlu':'Upload photo','+ Pievienot galeriju (auto)':'+ Add gallery (car)','Apraksts — latviešu (LV)':'Description — Latvian (LV)','Apraksts — angļu (EN)':'Description — English (EN)','Apraksts — krievu (RU)':'Description — Russian (RU)','Saglabāt profilu':'Save profile',
+ /* admin cabinet */
+ 'Pārskats':'Overview','Administratori':'Administrators','Produkti':'Products','Aktīvie instruktori':'Active instructors','+2 šomēnes':'+2 this month','Rezervācijas (mēn.)':'Bookings (mo.)','+18%':'+18%','Jauni kursanti':'New students','caur platformu':'via platform','Vidējais reitings':'Average rating','412 balsojumi':'412 votes','Publiskā profila saite':'Public profile link','Atvērt':'Open','Kopēt':'Copy','Visa informācija portālā ir krusteniski saistīta: pilsētas → kategorijas → instruktori.':'All information on the portal is cross-linked: cities → categories → instructors.','Reģistrētie instruktori':'Registered instructors','+ Reģistrēt instruktoru':'+ Register instructor','Kategorijas':'Categories','Reitings':'Rating','Aktīvs':'Active','Uzaicināts':'Invited','+ Piešķirt administratoru':'+ Assign administrator','Vārds':'Name','E-pasts':'Email','Loma':'Role','Galvenā admina':'Main admin','Administrators':'Administrator','Galvenā administratore var piešķirt citus administratorus un reģistrēt instruktorus.':'The main administrator can assign other administrators and register instructors.',
+ 'Produkti un cenas':'Products & prices','Norādi katras pozīcijas maksu un ieslēdz, ko rādīt publiskajā profilā.':'Set the price for each item and toggle what to show on the public profile.','Reģistrācija · dokumentu apstrāde':'Registration · document processing','Reģistrācijas maksa':'Registration fee','Vienreizēja maksa par līguma slēgšanu un dokumentu apstrādi':'One-time fee for contract signing and document processing','Teorija · cena katrai kategorijai':'Theory · price per category','Apraksts':'Description','Cena (€)':'Price (€)','Publisks':'Public','Vieglais auto':'Car','Motocikls':'Motorcycle','Auto ar piekabi':'Car with trailer','Kravas auto':'Truck','Autobuss':'Bus','+ Pievienot kategoriju':'+ Add category','Braukšanas nodarbības un paketes':'Driving lessons & packages','Instruktoru komisija':'Instructor commission','Procents, ko autoskola nopelna no katra instruktora par pārstāvību un klientu plūsmu. Rēķina no instruktora nodarbību apgrozījuma.':'The percentage the school earns from each instructor for representation and client flow. Calculated from the instructor lesson turnover.','Noklusējuma komisija visiem':'Default commission for all','Piemēro jaunreģistrētiem instruktoriem':'Applied to newly registered instructors','Apgrozījums (mēn.)':'Turnover (mo.)','Komisija (%)':'Commission (%)','Autoskolai (€)':'To school (€)','+ Jauna pakalpojumu pakete':'+ New service package','Saglabāt izmaiņas':'Save changes',
+ /* user panel */
+ 'Lietotāja profils':'User profile','Ienāc ar Smart-ID, lai redzētu savas nodarbības, grafiku, maciņu un transakcijas.':'Log in with Smart-ID to see your lessons, schedule, wallet and transactions.','Ienākt ar Smart-ID':'Log in with Smart-ID','Demo: vārds, uzvārds un personas kods tiks automātiski nolasīti no Smart-ID.':'Demo: your first name, last name and personal code will be read automatically from Smart-ID.','Nolasa datus no Smart-ID…':'Reading data from Smart-ID…','Iziet':'Log out','Maciņš':'Wallet','Grafiks':'Schedule','Nodarbību vēsture':'Lesson history','Profils':'Profile','Virtuālā maciņa atlikums':'Virtual wallet balance','No maciņa apmaksā braukšanas nodarbības':'Pay for driving lessons from the wallet','Papildināt maciņu':'Top up wallet','Cita summa':'Other amount','Iemaksāt':'Top up','Demo: iemaksa ar Smart-ID / maksājumu karti.':'Demo: top up with Smart-ID / payment card.','Neapmaksātās nodarbības':'Unpaid lessons','Visas nodarbības apmaksātas 🎉':'All lessons paid 🎉','Apmaksāta':'Paid','Jāapmaksā':'To pay','Apmaksāt no maciņa':'Pay from wallet','Turpmākās nodarbības':'Upcoming lessons','+ Rezervēt jaunu':'+ Book new','Visas pabeigtās nodarbības ar instruktora komentāriem.':'All completed lessons with instructor comments.','Pabeigta':'Completed','Instruktora komentārs':'Instructor comment','Visas transakcijas':'All transactions','Tips':'Type','Iemaksa':'Top-up','Labs progress ar joslu maiņu. Nākamreiz vairāk uzmanības gājēju pārejām.':'Good progress with lane changes. Next time more attention to pedestrian crossings.','Pamatmanevri stāvlaukumā nostrādāti labi, sajūgs vēl mazliet nedroši.':'Basic lot manoeuvres went well, the clutch is still a little shaky.','Pirmā nodarbība — iepazīšanās ar auto, pedāļiem un vadības ierīcēm.':'First lesson — getting to know the car, pedals and controls.',
+ 'Vārds (no Smart-ID)':'First name (from Smart-ID)','Uzvārds (no Smart-ID)':'Last name (from Smart-ID)','Personas kods (no Smart-ID)':'Personal code (from Smart-ID)','Tālrunis':'Phone','Vārds, uzvārds un personas kods nāk no Smart-ID un nav rediģējami. Mainīt var e-pastu un tālruni.':'First name, last name and personal code come from Smart-ID and cannot be edited. You can change email and phone.','Braukšanas mācību atļauja':"Driving learner's permit",'Augšupielādē braukšanas mācību atļauju':'Upload your driving learner’s permit','Lai instruktors varētu pārliecināties, ka tev ir tiesības mācīties braukt, pievieno CSDD izsniegto mācību atļauju (PDF vai foto).':'So the instructor can confirm you are allowed to learn to drive, add the CSDD-issued learner’s permit (PDF or photo).','Izvēlēties failu':'Choose file','⏳ Gaida pārbaudi':'⏳ Awaiting verification','✓ Pārbaudīta':'✓ Verified','Aizstāt failu':'Replace file','Instruktors tavā rezervācijā redz, ka mācību atļauja ir pārbaudīta.':'The instructor sees in your booking that the learner’s permit is verified.','Atļauja nosūtīta pārbaudei — parasti apstiprina dažu minūšu laikā.':'Permit sent for verification — usually approved within a few minutes.','Atļauja nav augšupielādēta':'Permit not uploaded','Atļauja gaida pārbaudi':'Permit awaiting verification','Mācību atļauja pārbaudīta':'Learner’s permit verified','✓ Atļauja pārbaudīta':'✓ Permit verified','⏳ Atļauja gaidīšanā':'⏳ Permit pending',
+ /* readiness + statuses */
+ 'Gatavs eksāmenam':'Exam-ready','Vidēja gatavība':'Medium readiness','Sākuma posms':'Early stage',
+ 'Pr':'Mon','Ot':'Tue','Tr':'Wed','Ce':'Thu','Pk':'Fri','Se':'Sat','Sv':'Sun',
+ /* AI chrome */
+ 'AI asistents':'AI assistant','Autoskolu AI asistents':'Driving school AI assistant','● Tiešsaistē · redz instruktoru grafikus':'● Online · sees instructor schedules','Jautā par autoskolām, laikiem, cenām…':'Ask about schools, times, prices…',
+ /* search placeholders */
+ 'Meklēt autoskolu vai pilsētu…':'Search for a school or city…','Meklēt instruktoru…':'Search for an instructor…',
+ /* toasts */
+ 'Grafiks saglabāts':'Schedule saved','Diena pievienota — izvēlies laikus':'Day added — choose times','Izvēlies datumu':'Choose a date','Grafiks un cenas saglabātas':'Schedule and prices saved','Profils atjaunināts':'Profile updated','Komentārs saglabāts':'Comment saved','Izmaksas pieprasījums nosūtīts — nauda saņemama 1–2 darba dienās':'Payout request sent — funds arrive in 1–2 business days','Jauna instruktora uzaicinājums nosūtīts':'New instructor invitation sent','Jauna administratora uzaicinājums nosūtīts':'New administrator invitation sent','Saite nokopēta':'Link copied','Reģistrācijas maksa atjaunināta':'Registration fee updated','Cena atjaunināta':'Price updated','Noklusējuma komisija atjaunināta':'Default commission updated','Jauna pakalpojumu pakete izveidota':'New service package created','Pievienots jauns kategorijas rindas lauks':'New category row added','Visas cenas un komisijas saglabātas':'All prices and commissions saved','Profils saglabāts':'Profile saved','Vispirms izvēlies brīvu laiku grafikā':'First choose a free slot in the schedule','Atbilde publicēta':'Reply published','Paldies! Tava atsauksme publicēta':'Thank you! Your review has been published','Autorizēts ar Smart-ID':'Authenticated with Smart-ID','Atļauja augšupielādēta — gaida pārbaudi':'Permit uploaded — awaiting verification','Mācību atļauja apstiprināta ✓':'Learner’s permit approved ✓','Nodarbība apmaksāta no maciņa':'Lesson paid from wallet','Nepietiek līdzekļu — papildini maciņu':'Not enough funds — top up your wallet','Ievadi summu':'Enter an amount','Krievu valoda — drīzumā':'Russian is coming soon'
+};
+const PHRASE=[['Instruktors ·','Instructor ·'],['Instruktors ','Instructor '],['Personas kods:','Personal code:'],['nolasīts no Smart-ID','read from Smart-ID'],['nodarbības','lessons'],['nodarbība','lesson'],['kategorijas','categories'],['kategorija','category'],[' kat.',' cat.'],['balsojumi','votes'],['atsauksmes','reviews'],['Maciņš:','Wallet:'],['Augšupielādēts','Uploaded'],['plkst.','at'],
+ ['Pirmdiena','Monday'],['Otrdiena','Tuesday'],['Trešdiena','Wednesday'],['Ceturtdiena','Thursday'],['Piektdiena','Friday'],['Sestdiena','Saturday'],['Svētdiena','Sunday'],
+ ['Janvāris','January'],['Februāris','February'],['Marts','March'],['Aprīlis','April'],['Maijs','May'],['Jūnijs','June'],['Jūlijs','July'],['Augusts','August'],['Septembris','September'],['Oktobris','October'],['Novembris','November'],['Decembris','December']];
+const origText=new WeakMap(), origPH=new WeakMap();
+let i18nBusy=false;
+function toEN(s){const t=s.trim();if(!t)return s;if(EXACT[t]!==undefined)return s.replace(t,EXACT[t]);let out=s;for(let i=0;i<PHRASE.length;i++)out=out.split(PHRASE[i][0]).join(PHRASE[i][1]);return out;}
+function trNode(n){if(LANG==='lv'){if(origText.has(n))n.nodeValue=origText.get(n);return;}
+  if(!origText.has(n))origText.set(n,n.nodeValue);const en=toEN(origText.get(n));if(n.nodeValue!==en)n.nodeValue=en;}
+function trPH(el){if(LANG==='lv'){if(origPH.has(el))el.setAttribute('placeholder',origPH.get(el));return;}
+  if(!origPH.has(el))origPH.set(el,el.getAttribute('placeholder'));const t=(origPH.get(el)||'').trim();if(EXACT[t]!==undefined)el.setAttribute('placeholder',EXACT[t]);}
+function textNodesIn(root){const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(n){const p=n.parentNode;if(!p||p.nodeName==='SCRIPT'||p.nodeName==='STYLE')return 2;return (n.nodeValue&&n.nodeValue.trim())?1:2;}});const out=[];while(w.nextNode())out.push(w.currentNode);return out;}
+function applyLang(){i18nBusy=true;textNodesIn(document.body).forEach(trNode);document.querySelectorAll('[placeholder]').forEach(trPH);document.documentElement.lang=LANG;i18nBusy=false;}
+function setupI18n(){new MutationObserver(muts=>{if(i18nBusy||LANG==='lv')return;i18nBusy=true;
+  muts.forEach(m=>m.addedNodes&&m.addedNodes.forEach(node=>{
+    if(node.nodeType===3)trNode(node);
+    else if(node.nodeType===1){textNodesIn(node).forEach(trNode);if(node.getAttribute&&node.getAttribute('placeholder'))trPH(node);node.querySelectorAll&&node.querySelectorAll('[placeholder]').forEach(trPH);}
+  }));i18nBusy=false;}).observe(document.body,{childList:true,subtree:true});}
+function setLang(l){
+  if(l==='ru'){toast(LANG==='en'?'Russian is coming soon':'Krievu valoda — drīzumā');return;}
+  LANG=l;
+  document.querySelectorAll('#langSwitch button').forEach(b=>b.classList.toggle('on',b.textContent.trim().toLowerCase()===l));
+  applyLang();
+}
+
+/* ---------------- INIT ---------------- */
+seedAvail();
+Object.entries(booked).forEach(([iid,arr])=>arr.forEach(b=>{if(avail[iid]&&avail[iid][b.date])avail[iid][b.date]=avail[iid][b.date].filter(t=>t!==b.time);}));
+userLoginHTML=document.getElementById('userLogin').innerHTML;
+renderSchools();renderSchedBuilder();renderProducts();setupI18n();
+</script>
+</body>
+</html>
