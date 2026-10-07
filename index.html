@@ -48,7 +48,17 @@
   .lang button.on{background:var(--brand-l);color:var(--brand-d)}
   .lang button:not(.on){opacity:.55}
   .demo-tag{font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-l);
-    padding:5px 10px;border-radius:999px;letter-spacing:.03em}
+    padding:5px 10px;border-radius:999px;letter-spacing:.03em;border:none;cursor:pointer;transition:.15s}
+  .demo-tag:hover{filter:brightness(.95);box-shadow:0 0 0 3px var(--accent-l)}
+
+  /* ---------- docs ---------- */
+  .doc h2{font-size:17px;font-weight:800;letter-spacing:-.01em;margin:22px 0 4px;display:flex;gap:9px;align-items:center}
+  .doc h2 .dic{font-size:19px}
+  .doc .lead{color:var(--muted);font-size:13.5px;margin:0 0 10px}
+  .doc ul{list-style:none;padding:0;margin:0 0 6px;display:flex;flex-direction:column;gap:7px}
+  .doc li{font-size:13.5px;line-height:1.5;display:flex;gap:9px;align-items:flex-start;padding-left:2px}
+  .doc li svg{flex:none;margin-top:3px}
+  .doc .sec{border-top:1px solid var(--line-soft);padding-top:4px}
 
   .wrap{max-width:1120px;margin:0 auto;padding:28px 24px 90px}
   .view{display:none;animation:fade .4s ease}
@@ -388,7 +398,7 @@
     <button data-role="admin" onclick="setRole('admin')">Autoskolas kabinets</button>
   </div>
   <div class="spacer"></div>
-  <span class="demo-tag">DEMO prototips</span>
+  <span class="demo-tag" onclick="openDocs()" title="Atvērt prototipa dokumentāciju">DEMO prototips</span>
   <div class="lang" id="langSwitch">
     <button class="on" onclick="setLang('lv')">LV</button><button onclick="setLang('en')">EN</button><button onclick="setLang('ru')">RU</button>
   </div>
@@ -740,8 +750,10 @@
     <div class="tabs" id="adTabs">
       <button class="on" onclick="adTab(0,this)">Pārskats</button>
       <button onclick="adTab(1,this)">Instruktori</button>
-      <button onclick="adTab(2,this)">Administratori</button>
-      <button onclick="adTab(3,this)">Produkti</button>
+      <button onclick="adTab(2,this)">Kursanti</button>
+      <button onclick="adTab(3,this)">Norēķini</button>
+      <button onclick="adTab(4,this)">Administratori</button>
+      <button onclick="adTab(5,this)">Produkti</button>
     </div>
 
     <div class="panel on" id="adp0">
@@ -779,6 +791,22 @@
       <p class="muted" style="font-size:13px;margin:-6px 0 14px">Noslodze = rezervētie laiki pret pieejamajiem laikiem šonedēļ. Spied uz instruktora, lai redzētu viņa kursantus, nodarbības un atsauksmes.</p>
       <div id="adm-instr-list"></div>
       <div id="adm-instr-detail" style="margin-top:18px"></div>
+    </div>
+
+    <div class="panel" id="adpk">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:10px">
+        <b style="font-size:16px">Kursanti</b>
+        <input id="admStuSearch" placeholder="Meklēt kursantu…" oninput="renderAdmStudentsList()" style="padding:9px 13px;border:1px solid var(--line);border-radius:10px;font-size:14px;min-width:200px">
+      </div>
+      <p class="muted" style="font-size:13px;margin:0 0 14px">Visi autoskolas kursanti, viņu līgumi un maksājumi. Spied uz kursanta, lai redzētu detaļas.</p>
+      <div id="adm-stu-list"></div>
+      <div id="adm-stu-detail" style="margin-top:18px"></div>
+    </div>
+
+    <div class="panel" id="adpf">
+      <b style="font-size:16px">Norēķini un izmaksas</b>
+      <p class="muted" style="font-size:13px;margin:6px 0 14px">Autoskola saņem maksājumus par saviem produktiem un instruktoru nopelnīto komisiju. No katra autoskolas produkta platforma ietur 5% komisiju.</p>
+      <div id="adm-finance"></div>
     </div>
 
     <div class="panel" id="adp2">
@@ -969,8 +997,8 @@
         <button class="on" onclick="uTab(0,this)">Maciņš</button>
         <button onclick="uTab(1,this)">Grafiks</button>
         <button onclick="uTab(2,this)">Nodarbību vēsture</button>
-        <button onclick="uTab(3,this)">Transakcijas</button>
-        <button onclick="uTab(4,this)">Līgumi</button>
+        <button onclick="uTab(3,this)">Līgumi</button>
+        <button onclick="uTab(4,this)">Transakcijas</button>
         <button onclick="uTab(5,this)">Profils</button>
       </div>
 
@@ -1011,6 +1039,12 @@
         <b style="font-size:16px">Nodarbību vēsture</b>
         <p class="muted" style="font-size:13.5px;margin:6px 0 14px">Visas pabeigtās nodarbības ar instruktora komentāriem.</p>
         <div id="u-past" style="display:flex;flex-direction:column;gap:11px"></div>
+      </div>
+
+      <div class="panel" id="upc">
+        <b style="font-size:16px">Mani līgumi ar autoskolām</b>
+        <p class="muted" style="font-size:13.5px;margin:6px 0 14px">Aktīvie un noslēgtie distances līgumi par apmācību.</p>
+        <div id="u-contracts" style="display:flex;flex-direction:column;gap:12px"></div>
       </div>
 
       <div class="panel" id="up3">
@@ -1143,6 +1177,18 @@
     <div class="crumbs" style="margin:0 0 4px"><span id="ct-sch-name"></span><span class="sep">›</span>Distances līgums</div>
     <div id="ct-stepper" style="display:flex;gap:8px;margin:14px 0 20px"></div>
     <div id="ct-body"></div>
+  </div>
+</div>
+
+<!-- Prototype documentation -->
+<div class="overlay" id="docOverlay">
+  <div class="modal" style="position:relative;max-width:720px">
+    <button class="close" onclick="closeDocs()">×</button>
+    <div style="display:flex;gap:14px;align-items:center;margin-bottom:4px">
+      <div style="width:46px;height:46px;border-radius:13px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:22px">📘</div>
+      <div><h3 id="doc-title" style="margin:0">Prototipa dokumentācija</h3><p class="muted" id="doc-sub" style="font-size:13px;margin:2px 0 0">Visas prototipa iespējas</p></div>
+    </div>
+    <div class="doc" id="doc-body" style="margin-top:14px"></div>
   </div>
 </div>
 
@@ -1526,6 +1572,8 @@ function ctFinish(){
   if(!contract.pk.trim()){toast(L('Ievadi personas kodu','Enter personal code'));return;}
   if(!contract.agree){toast(L('Jāpiekrīt līguma noteikumiem','You must accept the contract terms'));return;}
   const s=schools.find(x=>x.id===contract.sid);
+  const yr=new Date().getFullYear();
+  userContracts.unshift({no:'LV-'+yr+'-'+String(Math.floor(Math.random()*90000)+10000),school:s.name,sid:s.id,cat:contract.cat,city:contract.city,branch:contract.branch,lang:contract.lang,offer:ctOfferName(),price:ctPrice(),date:keyOff(0),status:'active'});
   contract.step=4;renderContract();
   toast(L('Līgums noslēgts · līds nosūtīts autoskolai','Contract signed · lead sent to the school'));
 }
@@ -1994,7 +2042,141 @@ function requestPayout(){
 /* ---------------- ADMIN PRODUCTS ---------------- */
 function adTab(n,el){document.querySelectorAll('#adTabs button').forEach(b=>b.classList.remove('on'));el.classList.add('on');
   document.querySelectorAll('[id^=adp]').forEach((p,ix)=>p.classList.toggle('on',ix===n));
-  if(n===1)renderAdmInstr();}
+  if(n===1)renderAdmInstr();
+  if(n===2)renderAdmStudentsList();
+  if(n===3)renderAdmFinance();}
+/* ---------------- ADMIN · FINANCE / PAYOUTS ---------------- */
+const PLATFORM_FEE=0.05;
+let schoolPayouts=[
+ {date:keyOff(-31),amt:2450,status:'Izmaksāts'},
+ {date:keyOff(-62),amt:1980,status:'Izmaksāts'},
+];
+function productIncome(){ // autoskolas produktu pārdošana (līgumi/paketes/reģistrācija)
+  return admStudents.map(s=>({date:s.signed,desc:s.offer+' · '+s.name,gross:s.cprice,fee:Math.round(s.cprice*PLATFORM_FEE)}));
+}
+function commissionIncome(){ // instruktoru nopelnītā komisija (mēnesī)
+  return admInstructors.filter(i=>i.status==='active').map(i=>({date:keyOff(-4),desc:i.name+' · komisija ('+i.comm+'%)',net:Math.round((i.earn.month||0)*i.comm/100)}));
+}
+function financeTotals(){
+  const prod=productIncome();const comm=commissionIncome();
+  const prodGross=prod.reduce((a,p)=>a+p.gross,0);
+  const prodFee=prod.reduce((a,p)=>a+p.fee,0);
+  const prodNet=prodGross-prodFee;
+  const commNet=comm.reduce((a,c)=>a+c.net,0);
+  const income=prodNet+commNet;
+  const paidOut=schoolPayouts.reduce((a,p)=>a+p.amt,0);
+  return {prod,comm,prodGross,prodFee,prodNet,commNet,income,paidOut,available:income-paidOut};
+}
+function renderAdmFinance(){
+  const el=document.getElementById('adm-finance');if(!el)return;
+  const t=financeTotals();
+  const ledger=[
+    ...t.prod.map(p=>({date:p.date,type:'Produkts',desc:p.desc,gross:p.gross,fee:p.fee,net:p.gross-p.fee})),
+    ...t.comm.map(c=>({date:c.date,type:'Komisija',desc:c.desc,gross:c.net,fee:0,net:c.net})),
+    ...schoolPayouts.map(p=>({date:p.date,type:'Izmaksa',desc:'Izmaksa uz bankas kontu',gross:null,fee:null,net:-p.amt})),
+  ].sort((a,b)=>parseKey(b.date)-parseKey(a.date));
+  el.innerHTML=`
+    <div class="card" style="padding:22px;background:linear-gradient(135deg,#0f766e,#0b5a53);color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+      <div><div style="font-size:13px;color:#bfe3de;font-weight:600">Pieejams izmaksai</div>
+        <div style="font-size:38px;font-weight:800;letter-spacing:-.02em;margin:4px 0" id="fin-avail">${eur(t.available)}</div>
+        <div style="font-size:12.5px;color:#bfe3de">Produktu neto + instruktoru komisija, atskaitot veiktās izmaksas</div></div>
+      <button class="btn" style="background:#fff;color:var(--brand-d)" onclick="requestPayout()" ${t.available<=0?'disabled style="opacity:.5"':''}>Pieprasīt izmaksu</button>
+    </div>
+    <div class="kpis" style="margin:16px 0">
+      <div class="kpi"><div class="t">Produktu ieņēmumi (bruto)</div><b>${eur(t.prodGross)}</b><div class="d">līgumi · paketes · reģistrācija</div></div>
+      <div class="kpi"><div class="t">Platformas komisija (5%)</div><b style="color:var(--danger)">−${eur(t.prodFee)}</b></div>
+      <div class="kpi"><div class="t">Produktu neto</div><b>${eur(t.prodNet)}</b></div>
+      <div class="kpi"><div class="t">Instruktoru komisija</div><b style="color:var(--brand-d)">${eur(t.commNet)}</b></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:4px">
+      <b style="font-size:15px">Visi maksājumi</b>
+      <span class="muted" style="font-size:12.5px">Ienākošie maksājumi un izmaksas</span>
+    </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Datums</th><th>Tips</th><th>Apraksts</th><th style="text-align:right">Bruto</th><th style="text-align:right">Platforma 5%</th><th style="text-align:right">Neto</th></tr></thead>
+      <tbody>${ledger.map(r=>`<tr>
+        <td class="muted" style="font-size:12.5px">${r.date.slice(0,5)}.${r.date.slice(6)}</td>
+        <td><span class="tag ${r.type==='Izmaksa'?'off':r.type==='Komisija'?'adm':'on'}">${r.type}</span></td>
+        <td>${r.desc}</td>
+        <td style="text-align:right;font-family:var(--mono)">${r.gross!=null?eur(r.gross):'—'}</td>
+        <td style="text-align:right;font-family:var(--mono);color:var(--danger)">${r.fee?'−'+eur(r.fee):'—'}</td>
+        <td style="text-align:right;font-family:var(--mono);font-weight:700;color:${r.net<0?'var(--danger)':'var(--ink)'}">${r.net<0?'−'+eur(-r.net):eur(r.net)}</td></tr>`).join('')}</tbody>
+    </table></div>
+    <div class="section-title">Izmaksu vēsture</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Datums</th><th>Summa</th><th>Statuss</th></tr></thead>
+      <tbody>${schoolPayouts.length?schoolPayouts.slice().sort((a,b)=>parseKey(b.date)-parseKey(a.date)).map(p=>`<tr><td class="muted" style="font-size:12.5px">${p.date.slice(0,5)}.${p.date.slice(6)}</td><td style="font-family:var(--mono);font-weight:700">${eur(p.amt)}</td><td><span class="tag ${p.status==='Izmaksāts'?'on':'off'}">${p.status}</span></td></tr>`).join(''):'<tr><td colspan="3" class="muted">Vēl nav izmaksu.</td></tr>'}</tbody>
+    </table></div>`;
+}
+function requestPayout(){
+  const t=financeTotals();
+  if(t.available<=0){toast(L('Nav pieejamu līdzekļu izmaksai','No funds available for payout'));return;}
+  schoolPayouts.unshift({date:keyOff(0),amt:t.available,status:'Apstrādē'});
+  renderAdmFinance();
+  toast(L('Izmaksas pieprasījums nosūtīts: ','Payout request sent: ')+eur(t.available));
+}
+
+let admStuOpen=null;
+function renderAdmStudentsList(){
+  const q=(document.getElementById('admStuSearch')||{}).value||'';
+  const ql=q.trim().toLowerCase();
+  const list=admStudents.filter(s=>!ql||s.name.toLowerCase().includes(ql));
+  const el=document.getElementById('adm-stu-list');if(!el)return;
+  const totPaid=admStudents.reduce((a,s)=>a+stuPaidTotal(s),0);
+  const activeC=admStudents.filter(s=>stuContractStatus(s)==='active').length;
+  el.innerHTML=`
+    <div class="kpis" style="margin-bottom:16px">
+      <div class="kpi"><div class="t">Kursanti kopā</div><b>${admStudents.length}</b><div class="d">${activeC} ar aktīvu līgumu</div></div>
+      <div class="kpi"><div class="t">Aktīvie līgumi</div><b>${activeC}</b></div>
+      <div class="kpi"><div class="t">Kopējie maksājumi</div><b>${eur(totPaid)}</b><div class="d">visā periodā</div></div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Kursants</th><th>Kat.</th><th>Līgums</th><th>Statuss</th><th>Nodarbības</th><th>Samaksāts</th></tr></thead>
+      <tbody>${list.map(s=>{const cs=stuContractStatus(s);return `
+        <tr onclick="admOpenStu('${s.name.replace(/'/g,"\\'")}')" style="cursor:pointer${admStuOpen===s.name?';background:var(--brand-l)':''}">
+          <td style="font-weight:700">${s.name}</td>
+          <td>${s.cat}</td>
+          <td style="font-family:var(--mono);font-size:12.5px">${s.cno}</td>
+          <td><span class="tag ${cs==='active'?'on':'off'}">${cs==='active'?'Aktīvs':'Noslēdzies'}</span></td>
+          <td style="font-family:var(--mono)">${studTotal(s)}</td>
+          <td style="font-family:var(--mono);font-weight:700">${eur(stuPaidTotal(s))}</td>
+        </tr>`;}).join('')||'<tr><td colspan="6" class="muted">Nav atrasts neviens kursants.</td></tr>'}</tbody>
+    </table></div>`;
+  renderAdmStuDetail();
+}
+function admOpenStu(name){admStuOpen=admStuOpen===name?null:name;renderAdmStudentsList();if(admStuOpen)setTimeout(()=>document.getElementById('adm-stu-detail').scrollIntoView({behavior:'smooth',block:'nearest'}),60);}
+function renderAdmStuDetail(){
+  const el=document.getElementById('adm-stu-detail');if(!el)return;
+  if(!admStuOpen){el.innerHTML='';return;}
+  const s=admStudents.find(x=>x.name===admStuOpen);if(!s){el.innerHTML='';return;}
+  const cs=stuContractStatus(s);const pays=stuPayments(s);
+  const instrs=Object.keys(s.byInstr).map(id=>(INSTR_NAME[id]||id)+' ('+s.byInstr[id]+')').join(', ');
+  el.innerHTML=`
+    <div class="card" style="padding:22px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div><b style="font-size:17px">${s.name}</b><div class="muted" style="font-size:13px">${s.cat} kat. · ${studTotal(s)} nodarbības · instruktori: ${instrs}</div></div>
+        <button class="btn ghost sm" onclick="admOpenStu('${s.name.replace(/'/g,"\\'")}')">Aizvērt ✕</button>
+      </div>
+      <div class="card" style="padding:16px;background:var(--surface-2);margin:16px 0;border-left:4px solid ${cs==='active'?'var(--brand)':'var(--line)'}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
+          <div><div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap"><b style="font-size:15px">Līgums Nr. ${s.cno}</b><span class="tag ${cs==='active'?'on':'off'}">${cs==='active'?'Aktīvs':'Noslēdzies'}</span></div>
+            <div class="muted" style="font-size:12.5px;margin-top:3px">Noslēgts ${s.signed.slice(0,5)}.${s.signed.slice(6)} · ${s.cat} kat.</div>
+            <div style="font-size:13px;margin-top:8px">📄 <b>${s.offer}</b></div></div>
+          <div style="text-align:right"><div class="muted" style="font-size:11.5px">Līguma summa</div><div style="font-family:var(--mono);font-weight:800;font-size:18px">€${s.cprice}</div></div>
+        </div>
+        <button class="btn ghost sm" style="margin-top:12px" onclick="toast(L('Līgums PDF formātā lejupielādēts','Contract PDF downloaded'))">⬇ Lejupielādēt līgumu</button>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <b style="font-size:15px">Maksājumi</b>
+        <span class="muted" style="font-size:12.5px">Kopā samaksāts: <b>${eur(stuPaidTotal(s))}</b></span>
+      </div>
+      <div class="tbl-wrap" style="margin-top:10px"><table>
+        <thead><tr><th>Datums</th><th>Tips</th><th>Apraksts</th><th style="text-align:right">Summa</th></tr></thead>
+        <tbody>${pays.map(p=>`<tr><td class="muted" style="font-size:12.5px">${p.date.slice(0,5)}.${p.date.slice(6)}</td><td><span class="pill ${p.type==='Līgums'?'cat':''}">${p.type}</span></td><td>${p.desc}</td><td style="text-align:right;font-family:var(--mono);font-weight:700">€${p.amt}</td></tr>`).join('')}</tbody>
+      </table></div>
+    </div>`;
+}
+
 /* ---------------- ADMIN · INSTRUCTOR OVERVIEW ---------------- */
 const admInstructors=[
  {id:'jkalnins',name:'Jānis Kalniņš',init:'JK',col:'#0f766e',cats:'B, BE',city:'Rīga, Jūrmala',rating:'4.9',status:'active',cap:28,bk:24,upc:5,done:126,comm:15,earn:{week:462,month:1820,q:5240,all:18600},
@@ -2018,20 +2200,31 @@ const INSTR_NAME={jkalnins:'Jānis Kalniņš',lozola:'Līga Ozola',akalve:'Agnes
 const MIN_LESSONS={AM:10,A:10,A2:10,B:10,BE:10,C:14,CE:14,D:16,DE:16};
 // Kursanti ir globāli — katra nodarbība var būt pie cita instruktora. byInstr = nodarbības pie katra instruktora.
 const admStudents=[
- {name:'Rihards Caune',cat:'B',byInstr:{jkalnins:6,lozola:2},last:keyOff(0),next:'šodien',status:'active'},
- {name:'Toms Bērziņš',cat:'B',byInstr:{jkalnins:14},last:keyOff(-3),next:'pēc 4 d.',status:'active'},
- {name:'Elīna Roze',cat:'B',byInstr:{jkalnins:18,lozola:6},last:keyOff(-11),next:'pēc 5 d.',status:'exam'},
- {name:'Jurģis Lapa',cat:'BE',byInstr:{jkalnins:4},last:keyOff(-22),next:'pēc 6 d.',status:'active'},
- {name:'Anita Krūze',cat:'B',byInstr:{jkalnins:22,akalve:8},last:keyOff(-64),next:'—',status:'done'},
- {name:'Pēteris Vilks',cat:'B',byInstr:{jkalnins:20,lozola:14},last:keyOff(-120),next:'—',status:'done'},
- {name:'Kristaps Vītols',cat:'B',byInstr:{lozola:5},last:keyOff(-1),next:'rīt',status:'active'},
- {name:'Līva Zariņa',cat:'B',byInstr:{lozola:16},last:keyOff(-6),next:'pēc 2 d.',status:'active'},
- {name:'Mārtiņš Ozols',cat:'B',byInstr:{lozola:16,jkalnins:9},last:keyOff(-16),next:'pēc 3 d.',status:'exam'},
- {name:'Sintija Bērza',cat:'B',byInstr:{lozola:28},last:keyOff(-82),next:'—',status:'done'},
- {name:'Didzis Alksnis',cat:'C',byInstr:{akalve:9},last:keyOff(-4),next:'pēc 1 d.',status:'active'},
- {name:'Katrīna Priede',cat:'B',byInstr:{akalve:11},last:keyOff(-9),next:'pēc 4 d.',status:'active'},
- {name:'Normunds Dālderis',cat:'C',byInstr:{akalve:22},last:keyOff(-95),next:'—',status:'done'},
+ {name:'Rihards Caune',cat:'B',byInstr:{jkalnins:6,lozola:2},last:keyOff(0),next:'šodien',status:'active',signed:keyOff(-45),cno:'LV-2026-00412',offer:'B kategorijas tālmācības pakete',cprice:690},
+ {name:'Toms Bērziņš',cat:'B',byInstr:{jkalnins:14},last:keyOff(-3),next:'pēc 4 d.',status:'active',signed:keyOff(-62),cno:'LV-2026-00327',offer:'Reģistrācija · distances līgums',cprice:20},
+ {name:'Elīna Roze',cat:'B',byInstr:{jkalnins:18,lozola:6},last:keyOff(-11),next:'pēc 5 d.',status:'exam',signed:keyOff(-96),cno:'LV-2026-00188',offer:'B kategorijas klātienes pakete',cprice:850},
+ {name:'Jurģis Lapa',cat:'BE',byInstr:{jkalnins:4},last:keyOff(-22),next:'pēc 6 d.',status:'active',signed:keyOff(-70),cno:'LV-2026-00256',offer:'Reģistrācija · distances līgums',cprice:20},
+ {name:'Anita Krūze',cat:'B',byInstr:{jkalnins:22,akalve:8},last:keyOff(-64),next:'—',status:'done',signed:keyOff(-210),cno:'LV-2025-01944',offer:'B kategorijas tālmācības pakete',cprice:690},
+ {name:'Pēteris Vilks',cat:'B',byInstr:{jkalnins:20,lozola:14},last:keyOff(-120),next:'—',status:'done',signed:keyOff(-320),cno:'LV-2025-00711',offer:'Reģistrācija · distances līgums',cprice:20},
+ {name:'Kristaps Vītols',cat:'B',byInstr:{lozola:5},last:keyOff(-1),next:'rīt',status:'active',signed:keyOff(-18),cno:'LV-2026-00533',offer:'Reģistrācija · distances līgums',cprice:20},
+ {name:'Līva Zariņa',cat:'B',byInstr:{lozola:16},last:keyOff(-6),next:'pēc 2 d.',status:'active',signed:keyOff(-52),cno:'LV-2026-00369',offer:'B kategorijas tālmācības pakete',cprice:690},
+ {name:'Mārtiņš Ozols',cat:'B',byInstr:{lozola:16,jkalnins:9},last:keyOff(-16),next:'pēc 3 d.',status:'exam',signed:keyOff(-84),cno:'LV-2026-00205',offer:'B kategorijas klātienes pakete',cprice:850},
+ {name:'Sintija Bērza',cat:'B',byInstr:{lozola:28},last:keyOff(-82),next:'—',status:'done',signed:keyOff(-160),cno:'LV-2025-01502',offer:'Reģistrācija · distances līgums',cprice:20},
+ {name:'Didzis Alksnis',cat:'C',byInstr:{akalve:9},last:keyOff(-4),next:'pēc 1 d.',status:'active',signed:keyOff(-40),cno:'LV-2026-00448',offer:'Reģistrācija · distances līgums',cprice:20},
+ {name:'Katrīna Priede',cat:'B',byInstr:{akalve:11},last:keyOff(-9),next:'pēc 4 d.',status:'active',signed:keyOff(-57),cno:'LV-2026-00351',offer:'B kategorijas tālmācības pakete',cprice:690},
+ {name:'Normunds Dālderis',cat:'C',byInstr:{akalve:22},last:keyOff(-95),next:'—',status:'done',signed:keyOff(-185),cno:'LV-2025-01333',offer:'Reģistrācija · distances līgums',cprice:20},
 ];
+const LESSON_PRICE={AM:30,A:45,A2:42,B:33,BE:38,C:48,CE:55,D:52};
+function stuContractStatus(s){return s.status==='done'?'past':'active';}
+function stuPayments(s){
+  const lp=LESSON_PRICE[s.cat]||33, tot=studTotal(s);
+  const list=[{date:s.signed,desc:(s.offer),amt:s.cprice,type:'Līgums'}];
+  const n=Math.min(tot,6);
+  for(let i=0;i<n;i++)list.push({date:keyOff(-(i*9+2)),desc:'Braukšanas nodarbība',amt:lp,type:'Nodarbība'});
+  if(tot>6)list.push({date:keyOff(-70),desc:'Braukšanas nodarbības ('+(tot-6)+' reizes)',amt:lp*(tot-6),type:'Nodarbība'});
+  return list;
+}
+function stuPaidTotal(s){return stuPayments(s).reduce((a,p)=>a+p.amt,0);}
 function studTotal(s){return Object.values(s.byInstr).reduce((a,b)=>a+b,0);}
 function studMin(s){return MIN_LESSONS[s.cat]||10;}
 function studInstrCount(id){return admStudents.filter(s=>s.byInstr[id]).length;}
@@ -2288,6 +2481,77 @@ function carSVG(c,n){const t=['#ffffff22','#00000014','#ffffff18'][n];
   <path d="M-55 10 h110 M-45 10 l10 -30 a14 14 0 0 1 13 -9 h34 a14 14 0 0 1 13 9 l10 30"/>
   <circle cx="-32" cy="10" r="11" fill="#ffffff22"/><circle cx="32" cy="10" r="11" fill="#ffffff22"/></g>
   ${n===0?'<text x="16" y="30" fill="#ffffffcc" font-size="12" font-family="monospace" font-weight="700">AUTO · GALERIJA</text>':''}</svg>`;}
+
+/* ---------------- PROTOTYPE DOCUMENTATION ---------------- */
+const DOCS=[
+ {ic:'🧭',t:{lv:'Vispārīgi',en:'General'},d:{lv:'Prototips demonstrē vienotu SaaS platformu Latvijas autoskolām.',en:'The prototype demonstrates a unified SaaS platform for Latvian driving schools.'},items:[
+   {lv:'4 lomu skati, pārslēdzami augšējā joslā: Publiskais skats, Lietotāja panelis, Instruktora kabinets, Autoskolas kabinets.',en:'4 role views, switchable in the top bar: Public view, User panel, Instructor dashboard, Driving school dashboard.'},
+   {lv:'Valodas pārslēgs LV ↔ EN — visa saskarne tiek tulkota (RU — "drīzumā").',en:'Language toggle LV ↔ EN — the whole UI is translated (RU — "coming soon").'},
+   {lv:'Visi datumi ir dinamiski (relatīvi pret šodienu), tāpēc demo izskatās reāls jebkurā dienā.',en:'All dates are dynamic (relative to today), so the demo looks realistic on any day.'},
+ ]},
+ {ic:'🏠',t:{lv:'Sākumlapa un katalogs',en:'Home page & catalog'},d:{lv:'Publiskā ieejas lapa, kas pārdod platformu un ļauj atrast autoskolu.',en:'The public landing page that sells the platform and helps find a school.'},items:[
+   {lv:'Vērtības piedāvājums 3 auditorijām (kursantiem, autoskolām, instruktoriem) ar cenām.',en:'Value proposition for 3 audiences (students, schools, instructors) with pricing.'},
+   {lv:'Reālu autoskolu katalogs ar meklēšanu un filtru pēc kategorijas.',en:'Catalog of real driving schools with search and category filter.'},
+   {lv:'FAQ bloks ar biežāk uzdotajiem jautājumiem.',en:'FAQ block with frequently asked questions.'},
+ ]},
+ {ic:'📝',t:{lv:'Teorijas eksāmena tests',en:'Theory exam test'},d:{lv:'Pašmācības tests ar tēmu izvēli, kā Presto lapā.',en:'Self-study test with topic selection, like on the Presto site.'},items:[
+   {lv:'Kategorijas izvēle un pilns CSDD tēmu saraksts ar atzīmēšanu.',en:'Category selection and the full list of CSDD topics with checkboxes.'},
+   {lv:'Testa sākšanai nepieciešama autorizācija ar Smart-ID.',en:'Starting the test requires Smart-ID authentication.'},
+   {lv:'Jautājumi pa vienam ar taimeri, atbilžu pārbaudi, paskaidrojumiem un rezultātu ekrānu.',en:'Questions one by one with a timer, answer checking, explanations and a results screen.'},
+ ]},
+ {ic:'🚗',t:{lv:'Instruktori',en:'Instructors'},d:{lv:'Visu instruktoru katalogs un publiskais profils.',en:'Directory of all instructors and the public profile.'},items:[
+   {lv:'Filtrēšana pēc pilsētas un kategorijas; cenas, reitings, atsauksmes.',en:'Filtering by city and category; prices, rating, reviews.'},
+   {lv:'Publiskais profils: valodas, transmisija, pilsētas ar uzsākšanas vietām.',en:'Public profile: languages, transmission, cities with start locations.'},
+   {lv:'Grafiks ar pilsētas izvēli un rezervēšana — cena pa kategorijām, 90 min soļi.',en:'Schedule with city selection and booking — price per category, 90-min steps.'},
+ ]},
+ {ic:'🏫',t:{lv:'Autoskolas publiskais profils',en:'School public profile'},d:{lv:'Detalizēta autoskolas lapa ar pilnu piedāvājumu.',en:'A detailed school page with the full offering.'},items:[
+   {lv:'CSDD teorijas statistika, ielasīta pēc uzņēmuma (SIA) nosaukuma.',en:'CSDD theory statistics, loaded by company (SIA) name.'},
+   {lv:'Cenas katrai kategorijai: reģistrācija, teorija (klātienē/tālmācībā + valodas), eksāmeni, nodarbību min–max, minimālais skaits.',en:'Prices per category: registration, theory (in-person/distance + languages), exams, lesson min–max, minimum count.'},
+   {lv:'Papildpakalpojumi (pirmā palīdzība, med. izziņa), mājaslapa, pakalpojumu paketes, instruktori.',en:'Additional services (first aid, medical certificate), website, service packages, instructors.'},
+ ]},
+ {ic:'🖊️',t:{lv:'Distances līguma slēgšana',en:'Distance contract signing'},d:{lv:'Platformas galvenais līdu ģenerators — 3 soļu process.',en:'The platform\'s main lead generator — a 3-step process.'},items:[
+   {lv:'1. solis: pilsēta, filiāle, valoda, kategorija un pakalpojums/pakete.',en:'Step 1: city, branch, language, category and service/package.'},
+   {lv:'2. solis: personas dati (ar iespēju aizpildīt no Smart-ID).',en:'Step 2: personal data (with the option to fill in from Smart-ID).'},
+   {lv:'3. solis: līguma noteikumi, personas kods, apmaksa → līgums noslēgts un līds nosūtīts autoskolai.',en:'Step 3: contract terms, personal code, payment → contract signed and lead sent to the school.'},
+ ]},
+ {ic:'🎓',t:{lv:'Lietotāja (kursanta) panelis',en:'User (student) panel'},d:{lv:'Kursanta personīgā telpa pēc Smart-ID ieejas.',en:'The student\'s personal space after Smart-ID login.'},items:[
+   {lv:'Virtuālais maciņš ar papildināšanu; no tā apmaksā nodarbības.',en:'Virtual wallet with top-ups; lessons are paid from it.'},
+   {lv:'Turpmāko nodarbību grafiks, nodarbību vēsture ar instruktora komentāriem.',en:'Upcoming lesson schedule, lesson history with instructor comments.'},
+   {lv:'Transakcijas, līgumi (aktīvie/noslēgušies), braukšanas mācību atļaujas augšupielāde.',en:'Transactions, contracts (active/ended), learner\'s permit upload.'},
+ ]},
+ {ic:'🧑‍🏫',t:{lv:'Instruktora kabinets',en:'Instructor dashboard'},d:{lv:'Instruktora darba rīki un norēķini.',en:'The instructor\'s work tools and settlements.'},items:[
+   {lv:'Grafika veidotājs pa kategorijām un pilsētām; cena darbdienās/brīvdienās; 90 min pārklāšanās kontrole.',en:'Schedule builder per category and city; weekday/weekend price; 90-min overlap control.'},
+   {lv:'Rezervēto laiku skats un atcelšana — nauda atgriežas kursantam; <24h brīdinājums ar €5 kompensāciju.',en:'View of booked slots and cancellation — money returned to the student; <24h warning with €5 compensation.'},
+   {lv:'Kursanti un nodarbības ar komentāriem, norēķini pa mēnešiem un izmaksu pieprasīšana, atsauksmes.',en:'Students and lessons with comments, monthly settlements and payout requests, reviews.'},
+   {lv:'Iestatījumi: tālrunis, e-pasts, pilsētas + adreses, kategorijas, valodas, transmisija.',en:'Settings: phone, email, cities + addresses, categories, languages, transmission.'},
+ ]},
+ {ic:'🏢',t:{lv:'Autoskolas kabinets',en:'Driving school dashboard'},d:{lv:'Autoskolas administrācijas vadības panelis.',en:'The school administration\'s control panel.'},items:[
+   {lv:'Pārskats ar KPI un CSDD statistikas ielasi pēc SIA nosaukuma.',en:'Overview with KPIs and CSDD statistics loaded by SIA name.'},
+   {lv:'Instruktori: noslodze, kursanti/nodarbības, atsauksmes un nopelnītās summas pa periodiem.',en:'Instructors: workload, students/lessons, reviews and earnings by period.'},
+   {lv:'Kursanti: saraksts ar līgumiem un visiem maksājumiem, filtrs pa periodiem.',en:'Students: list with contracts and all payments, period filter.'},
+   {lv:'Norēķini: ienākošie maksājumi, platformas 5% komisija, izmaksu pieprasīšana un vēsture.',en:'Settlements: incoming payments, 5% platform fee, payout requests and history.'},
+   {lv:'Produkti: reģistrācija, teorija pa kategorijām, instruktoru komisija, papildpakalpojumi un pakešu veidotājs.',en:'Products: registration, theory per category, instructor commission, additional services and package builder.'},
+ ]},
+ {ic:'💶',t:{lv:'Biznesa modelis',en:'Business model'},d:{lv:'Kā platforma pelna.',en:'How the platform earns.'},items:[
+   {lv:'Kursants nemaksā platformai neko — tikai par mācībām.',en:'The student pays the platform nothing — only for the training.'},
+   {lv:'Autoskola: €100/mēn abonements + 5% komisija no darījumiem.',en:'School: €100/mo subscription + 5% commission on deals.'},
+   {lv:'Individuālais instruktors: €20/mēn (1. mēnesis bez maksas) + 5% komisija; autoskolu piesaistītajiem — bez maksas.',en:'Individual instructor: €20/mo (first month free) + 5% commission; free for school-linked instructors.'},
+   {lv:'No katra autoskolas produkta platforma ietur 5%.',en:'The platform takes 5% from each school product.'},
+ ]},
+];
+function openDocs(){document.getElementById('docOverlay').classList.add('on');renderDocs();}
+function closeDocs(){document.getElementById('docOverlay').classList.remove('on');}
+function renderDocs(){
+  document.getElementById('doc-title').textContent=L('Prototipa dokumentācija','Prototype documentation');
+  document.getElementById('doc-sub').textContent=L('Visas prototipa iespējas vienuviet','All prototype capabilities in one place');
+  const chk='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0f766e" stroke-width="2.8"><path d="M20 6 9 17l-5-5"/></svg>';
+  document.getElementById('doc-body').innerHTML=DOCS.map((s,ix)=>`
+    <div class="${ix?'sec':''}">
+      <h2><span class="dic">${s.ic}</span>${L(s.t.lv,s.t.en)}</h2>
+      <p class="lead">${L(s.d.lv,s.d.en)}</p>
+      <ul>${s.items.map(it=>`<li>${chk}<span>${L(it.lv,it.en)}</span></li>`).join('')}</ul>
+    </div>`).join('');
+}
 function toast(m){const t=document.getElementById('toast');t.textContent=(LANG==='en'&&typeof EXACT!=='undefined'&&EXACT[m])?EXACT[m]:m;t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';
   clearTimeout(window._tt);window._tt=setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(20px)';},2200);}
 
@@ -2345,6 +2609,10 @@ let userTx=[
  {date:keyOff(-17),type:'Nodarbība',desc:'J. Kalniņš · 1. nodarbība',amt:-22},
 ];
 let userLoginHTML='';
+let userContracts=[
+ {no:'LV-2026-00412',school:'Presto Autoskola',sid:'presto',cat:'B',city:'Rīga',branch:'Centra filiāle',lang:'LV',offer:'B kategorijas tālmācības pakete',price:690,date:keyOff(-38),status:'active'},
+ {no:'LV-2024-01876',school:'BAVA Autoskola',sid:'bava',cat:'A',city:'Rīga',branch:'Birojs',lang:'LV',offer:'Reģistrācija · distances līgums',price:20,date:keyOff(-760),status:'past'},
+];
 function smartLogin(){
   const l=document.getElementById('userLogin');
   l.querySelector('.card').innerHTML='<div class="smartid"><p style="font-weight:700">Nolasa datus no Smart-ID…</p><p class="muted" style="font-size:13px">Pārbaudiet kontrolkodu lietotnē</p><div class="code">7391</div><div class="spinner"></div><p class="muted" style="font-size:13px">Gaida apstiprinājumu…</p></div>';
@@ -2360,8 +2628,30 @@ function renderUser(){
   document.getElementById('u-f-pk').value=user.pk;
   document.getElementById('u-f-email').value=user.email;
   document.getElementById('u-f-phone').value=user.phone;
-  renderWallet();renderUnpaid();renderUpcoming();renderPast();renderUserTx();renderPermit();
+  renderWallet();renderUnpaid();renderUpcoming();renderPast();renderUserTx();renderPermit();renderContracts();
 }
+function renderContracts(){
+  const el=document.getElementById('u-contracts');if(!el)return;
+  if(!userContracts.length){el.innerHTML='<p class="muted" style="font-size:13.5px">Tev vēl nav neviena līguma ar autoskolu. Atrodi autoskolu un noslēdz līgumu attālināti.</p>';return;}
+  const active=userContracts.filter(c=>c.status==='active');const past=userContracts.filter(c=>c.status!=='active');
+  const card=c=>`<div class="card" style="padding:18px;border-left:4px solid ${c.status==='active'?'var(--brand)':'var(--line)'}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+      <div><div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap"><b style="font-size:16px">${c.school}</b>
+        <span class="tag ${c.status==='active'?'on':'off'}">${c.status==='active'?'Aktīvs':'Noslēdzies'}</span></div>
+        <div class="muted" style="font-size:12.5px;margin-top:3px">Līgums Nr. ${c.no} · noslēgts ${c.date.slice(0,5)}.${c.date.slice(6)}</div></div>
+      <div style="text-align:right"><div class="muted" style="font-size:11.5px">Apmaksāts</div><div style="font-family:var(--mono);font-weight:800;font-size:18px">€${c.price}</div></div>
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 4px">
+      <span class="pill cat">${c.cat} kat.</span><span class="pill">📍 ${c.city} · ${c.branch}</span><span class="pill">🗣 ${c.lang}</span></div>
+    <div style="font-size:13px;margin-top:8px">📄 <b>${c.offer}</b></div>
+    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+      <button class="btn ghost sm" onclick="toast(L('Līgums PDF formātā lejupielādēts','Contract PDF downloaded'))">⬇ Lejupielādēt līgumu</button>
+      ${c.status==='active'?`<button class="btn ghost sm" onclick="openSchoolFromId('${c.sid}')">Skatīt autoskolu →</button>`:''}
+    </div></div>`;
+  el.innerHTML=(active.length?'<div class="muted" style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px">Aktīvie</div>'+active.map(card).join(''):'')+
+    (past.length?'<div class="muted" style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin:16px 0 4px">Noslēgušies</div>'+past.map(card).join(''):'');
+}
+function openSchoolFromId(sid){if(contract)closeContract();openSchool(sid);}
 function uTab(n,el){document.querySelectorAll('#uTabs button').forEach(b=>b.classList.remove('on'));el.classList.add('on');
   document.querySelectorAll('[id^=up]').forEach((p,ix)=>p.classList.toggle('on',ix===n));}
 function renderWallet(){const v='€'+user.wallet.toFixed(0);document.getElementById('u-wallet-big').textContent=v;document.getElementById('u-wallet-chip').textContent=v;}
@@ -2477,7 +2767,10 @@ const EXACT={
  'Iestatījumi':'Settings','Kontaktinformācija':'Contact information','Tālruņa numurs':'Phone number','E-pasts':'Email','Pilsētas, kurās strādāju':'Cities where I work','Atzīmē pilsētas un katrai norādi nodarbību uzsākšanas vietu (adresi).':'Select cities and provide a lesson start location (address) for each.','Kategorijas, ko pasniedzu':'Categories I teach','Atzīmētās kategorijas parādās nodarbību grafikā — katrai var izveidot atsevišķu grafiku un cenu.':'Selected categories appear in the lesson schedule — each can have its own schedule and price.','Valodas, kurās māku':'Languages I teach in','Automašīnas transmisija':'Car transmission','Saglabāt iestatījumus':'Save settings','Atzīmē vismaz vienu pilsētu augstāk.':'Select at least one city above.',
  'Instruktoru noslodze':'Instructor workload','Noslodze = rezervētie laiki pret pieejamajiem laikiem šonedēļ. Spied uz instruktora, lai redzētu viņa kursantus, nodarbības un atsauksmes.':'Workload = booked slots vs. available slots this week. Click an instructor to see their students, lessons and reviews.','Aktīvie instruktori':'Active instructors','Vidējā noslodze':'Average workload','Gaidāmās nodarbības':'Upcoming lessons','Aktīvie kursanti':'Active students','Instruktors':'Instructor','Kat.':'Cat.','Noslodze (šonedēļ)':'Workload (this week)','Gaidāmās':'Upcoming','Kursanti':'Students','Reitings':'Rating','Statuss':'Status','Aktīvs':'Active','Uzaicināts':'Invited','Kursanti un nodarbības':'Students and lessons','Kursants':'Student','Nodarbības':'Lessons','Nākamā':'Next','Kursantu atsauksmes par nodarbībām':'Student reviews about lessons','Noslodze šonedēļ':'Workload this week','Pabeigtas nodarbības':'Completed lessons','Pabeidzis':'Completed','Gatavs eksāmenam':'Ready for exam','Mācās':'Learning','Vēl nav kursantu.':'No students yet.','Vēl nav atsauksmju.':'No reviews yet.','šonedēļ':'this week','nākamajās dienās':'in the coming days','mācās pašlaik':'learning now','kopā':'total','šodien':'today','rīt':'tomorrow','pēc 1 d.':'in 1 d.','pēc 2 d.':'in 2 d.','pēc 3 d.':'in 3 d.','pēc 4 d.':'in 4 d.','pēc 5 d.':'in 5 d.','pēc 6 d.':'in 6 d.','pirms 2 d.':'2 d. ago','pirms 3 d.':'3 d. ago','pirms 5 d.':'5 d. ago','pirms 6 d.':'6 d. ago','pirms 1 ned.':'1 wk ago','pirms 2 ned.':'2 wk ago','no 4 profiliem':'of 4 profiles','Aizvērt ✕':'Close ✕',
  'Šonedēļ':'This week','Šomēnes':'This month','3 mēneši':'3 months','Visi':'All','Pēdējā':'Last','↔ Kursants nav piesaistīts vienam instruktoram — viņš var brīvi mainīt instruktorus. Atzīme norāda, ka kursantam ir nodarbības arī pie cita instruktora.':'↔ A student is not tied to one instructor — they can freely switch instructors. The marker shows the student also has lessons with another instructor.','Šajā periodā nav kursantu.':'No students in this period.','Pie šī instr.':'With this instr.','Kopā (min.)':'Total (min.)','Nodarbības kopā':'Lessons total','nodarb. · ':'lessons · ','✓ min. sasniegts':'✓ min. reached','zem min.':'below min.','Kursanti pie šī instr.':'Students with this instr.','aktīvi':'active','Instruktoru ieņēmumi':'Instructor earnings','Autoskolas komisija':'School commission','Komisija autoskolai':'Commission to school','Noslodze':'Workload','Instruktors nopelnījis (bruto)':'Instructor earned (gross)','Instruktoram pēc komisijas (neto)':'To instructor after commission (net)',
- 'Noslēgt līgumu attālināti':'Sign a distance contract','Izvēlēties':'Choose','Distances līgums':'Distance contract','Pilsēta':'City','Filiāle':'Branch','Mācību valoda':'Study language','Ko vēlies iegādāties?':'What do you want to buy?','Kopā apmaksai tagad':'Total to pay now','Tālāk →':'Next →','← Atpakaļ':'← Back','Dati par Tevi':'Your details','Aizpildīt ar Smart-ID':'Fill in with Smart-ID','Vārds':'First name','Uzvārds':'Surname','Līguma noteikumi':'Contract terms','Personas kods':'Personal code','Esmu iepazinies un piekrītu līguma noteikumiem un privātuma politikai.':'I have read and agree to the contract terms and privacy policy.','Līgums noslēgts!':'Contract signed!','Atvērt manu profilu':'Open my profile','Aizvērt':'Close','↔ "Nodarbības kopā" ir visas kursanta braukšanas nodarbības (var būt pie vairākiem instruktoriem). Likumā noteiktais minimums (B — 10) ir tikai slieksnis — reāli kursanti bieži brauc 30–40 reizes. "Pie šī instr." rāda, cik no tām ir vadījis šis instruktors.':'↔ "Lessons total" is all of the student\'s driving lessons (possibly across several instructors). The legal minimum (B — 10) is only a threshold — in practice students often drive 30–40 times. "With this instr." shows how many were taught by this instructor.','↔ Nodarbību skaits pret minimumu ir kursanta kopējais rādītājs — katra nodarbība var būt pie cita instruktora. "Pie šī instr." rāda, cik no tām ir vadījis šis instruktors; atzīme norāda, pie cik instruktoriem kursants mācās kopumā.':'↔ Lessons toward the minimum is the student\'s overall figure — each lesson can be with a different instructor. "With this instr." shows how many were taught by this instructor; the marker shows how many instructors the student trains with in total.',
+ 'Noslēgt līgumu attālināti':'Sign a distance contract','Izvēlēties':'Choose','Distances līgums':'Distance contract','Pilsēta':'City','Filiāle':'Branch','Mācību valoda':'Study language','Ko vēlies iegādāties?':'What do you want to buy?','Kopā apmaksai tagad':'Total to pay now','Tālāk →':'Next →','← Atpakaļ':'← Back','Dati par Tevi':'Your details','Aizpildīt ar Smart-ID':'Fill in with Smart-ID','Vārds':'First name','Uzvārds':'Surname','Līguma noteikumi':'Contract terms','Personas kods':'Personal code','Esmu iepazinies un piekrītu līguma noteikumiem un privātuma politikai.':'I have read and agree to the contract terms and privacy policy.','Līgums noslēgts!':'Contract signed!','Atvērt manu profilu':'Open my profile','Aizvērt':'Close',
+ 'Līgumi':'Contracts','Mani līgumi ar autoskolām':'My contracts with driving schools','Aktīvie un noslēgtie distances līgumi par apmācību.':'Active and completed distance training contracts.','Tev vēl nav neviena līguma ar autoskolu. Atrodi autoskolu un noslēdz līgumu attālināti.':'You don\'t have any contract with a driving school yet. Find a school and sign a distance contract.','Noslēdzies':'Ended','Aktīvie':'Active','Noslēgušies':'Ended','Apmaksāts':'Paid','⬇ Lejupielādēt līgumu':'⬇ Download contract','Skatīt autoskolu →':'View school →','Reģistrācija · distances līgums':'Registration · distance contract',
+ 'Meklēt kursantu…':'Search student…','Visi autoskolas kursanti, viņu līgumi un maksājumi. Spied uz kursanta, lai redzētu detaļas.':'All of the school\'s students, their contracts and payments. Click a student to see details.','Kursanti kopā':'Students total','Aktīvie līgumi':'Active contracts','Kopējie maksājumi':'Total payments','visā periodā':'all time','Līgums':'Contract','Samaksāts':'Paid','Nav atrasts neviens kursants.':'No students found.','Līguma summa':'Contract amount','Maksājumi':'Payments','Nodarbība':'Lesson','Braukšanas nodarbība':'Driving lesson','Datums':'Date','Tips':'Type','Apraksts':'Description','Summa':'Amount',
+ 'Norēķini':'Settlements','Norēķini un izmaksas':'Settlements & payouts','Autoskola saņem maksājumus par saviem produktiem un instruktoru nopelnīto komisiju. No katra autoskolas produkta platforma ietur 5% komisiju.':'The school receives payments for its own products and the commission earned from its instructors. The platform takes a 5% fee from each school product.','Pieejams izmaksai':'Available for payout','Produktu neto + instruktoru komisija, atskaitot veiktās izmaksas':'Product net + instructor commission, minus payouts made','Pieprasīt izmaksu':'Request payout','Produktu ieņēmumi (bruto)':'Product revenue (gross)','līgumi · paketes · reģistrācija':'contracts · packages · registration','Platformas komisija (5%)':'Platform fee (5%)','Produktu neto':'Product net','Instruktoru komisija':'Instructor commission','Visi maksājumi':'All payments','Ienākošie maksājumi un izmaksas':'Incoming payments and payouts','Bruto':'Gross','Platforma 5%':'Platform 5%','Neto':'Net','Izmaksu vēsture':'Payout history','Produkts':'Product','Komisija':'Commission','Izmaksa':'Payout','Izmaksa uz bankas kontu':'Payout to bank account','Izmaksāts':'Paid out','Apstrādē':'Processing','Vēl nav izmaksu.':'No payouts yet.','↔ "Nodarbības kopā" ir visas kursanta braukšanas nodarbības (var būt pie vairākiem instruktoriem). Likumā noteiktais minimums (B — 10) ir tikai slieksnis — reāli kursanti bieži brauc 30–40 reizes. "Pie šī instr." rāda, cik no tām ir vadījis šis instruktors.':'↔ "Lessons total" is all of the student\'s driving lessons (possibly across several instructors). The legal minimum (B — 10) is only a threshold — in practice students often drive 30–40 times. "With this instr." shows how many were taught by this instructor.','↔ Nodarbību skaits pret minimumu ir kursanta kopējais rādītājs — katra nodarbība var būt pie cita instruktora. "Pie šī instr." rāda, cik no tām ir vadījis šis instruktors; atzīme norāda, pie cik instruktoriem kursants mācās kopumā.':'↔ Lessons toward the minimum is the student\'s overall figure — each lesson can be with a different instructor. "With this instr." shows how many were taught by this instructor; the marker shows how many instructors the student trains with in total.',
  /* user panel */
  'Lietotāja profils':'User profile','Ienāc ar Smart-ID, lai redzētu savas nodarbības, grafiku, maciņu un transakcijas.':'Log in with Smart-ID to see your lessons, schedule, wallet and transactions.','Ienākt ar Smart-ID':'Log in with Smart-ID','Demo: vārds, uzvārds un personas kods tiks automātiski nolasīti no Smart-ID.':'Demo: your first name, last name and personal code will be read automatically from Smart-ID.','Nolasa datus no Smart-ID…':'Reading data from Smart-ID…','Iziet':'Log out','Maciņš':'Wallet','Grafiks':'Schedule','Nodarbību vēsture':'Lesson history','Profils':'Profile','Virtuālā maciņa atlikums':'Virtual wallet balance','No maciņa apmaksā braukšanas nodarbības':'Pay for driving lessons from the wallet','Papildināt maciņu':'Top up wallet','Cita summa':'Other amount','Iemaksāt':'Top up','Demo: iemaksa ar Smart-ID / maksājumu karti.':'Demo: top up with Smart-ID / payment card.','Neapmaksātās nodarbības':'Unpaid lessons','Visas nodarbības apmaksātas 🎉':'All lessons paid 🎉','Apmaksāta':'Paid','Jāapmaksā':'To pay','Apmaksāt no maciņa':'Pay from wallet','Turpmākās nodarbības':'Upcoming lessons','+ Rezervēt jaunu':'+ Book new','Visas pabeigtās nodarbības ar instruktora komentāriem.':'All completed lessons with instructor comments.','Pabeigta':'Completed','Instruktora komentārs':'Instructor comment','Visas transakcijas':'All transactions','Tips':'Type','Iemaksa':'Top-up','Labs progress ar joslu maiņu. Nākamreiz vairāk uzmanības gājēju pārejām.':'Good progress with lane changes. Next time more attention to pedestrian crossings.','Pamatmanevri stāvlaukumā nostrādāti labi, sajūgs vēl mazliet nedroši.':'Basic lot manoeuvres went well, the clutch is still a little shaky.','Pirmā nodarbība — iepazīšanās ar auto, pedāļiem un vadības ierīcēm.':'First lesson — getting to know the car, pedals and controls.',
  'Vārds (no Smart-ID)':'First name (from Smart-ID)','Uzvārds (no Smart-ID)':'Last name (from Smart-ID)','Personas kods (no Smart-ID)':'Personal code (from Smart-ID)','Tālrunis':'Phone','Vārds, uzvārds un personas kods nāk no Smart-ID un nav rediģējami. Mainīt var e-pastu un tālruni.':'First name, last name and personal code come from Smart-ID and cannot be edited. You can change email and phone.','Braukšanas mācību atļauja':"Driving learner's permit",'Augšupielādē braukšanas mācību atļauju':'Upload your driving learner’s permit','Lai instruktors varētu pārliecināties, ka tev ir tiesības mācīties braukt, pievieno CSDD izsniegto mācību atļauju (PDF vai foto).':'So the instructor can confirm you are allowed to learn to drive, add the CSDD-issued learner’s permit (PDF or photo).','Izvēlēties failu':'Choose file','⏳ Gaida pārbaudi':'⏳ Awaiting verification','✓ Pārbaudīta':'✓ Verified','Aizstāt failu':'Replace file','Instruktors tavā rezervācijā redz, ka mācību atļauja ir pārbaudīta.':'The instructor sees in your booking that the learner’s permit is verified.','Atļauja nosūtīta pārbaudei — parasti apstiprina dažu minūšu laikā.':'Permit sent for verification — usually approved within a few minutes.','Atļauja nav augšupielādēta':'Permit not uploaded','Atļauja gaida pārbaudi':'Permit awaiting verification','Mācību atļauja pārbaudīta':'Learner’s permit verified','✓ Atļauja pārbaudīta':'✓ Permit verified','⏳ Atļauja gaidīšanā':'⏳ Permit pending',
@@ -2491,7 +2784,7 @@ const EXACT={
  /* toasts */
  'Grafiks saglabāts':'Schedule saved','Diena pievienota — izvēlies laikus':'Day added — choose times','Izvēlies datumu':'Choose a date','Grafiks un cenas saglabātas':'Schedule and prices saved','Profils atjaunināts':'Profile updated','Komentārs saglabāts':'Comment saved','Izmaksas pieprasījums nosūtīts — nauda saņemama 1–2 darba dienās':'Payout request sent — funds arrive in 1–2 business days','Jauna instruktora uzaicinājums nosūtīts':'New instructor invitation sent','Jauna administratora uzaicinājums nosūtīts':'New administrator invitation sent','Saite nokopēta':'Link copied','Reģistrācijas maksa atjaunināta':'Registration fee updated','Cena atjaunināta':'Price updated','Noklusējuma komisija atjaunināta':'Default commission updated','Jauna pakalpojumu pakete izveidota':'New service package created','Pievienots jauns kategorijas rindas lauks':'New category row added','Visas cenas un komisijas saglabātas':'All prices and commissions saved','Profils saglabāts':'Profile saved','Vispirms izvēlies brīvu laiku grafikā':'First choose a free slot in the schedule','Atbilde publicēta':'Reply published','Paldies! Tava atsauksme publicēta':'Thank you! Your review has been published','Autorizēts ar Smart-ID':'Authenticated with Smart-ID','Atļauja augšupielādēta — gaida pārbaudi':'Permit uploaded — awaiting verification','Mācību atļauja apstiprināta ✓':'Learner’s permit approved ✓','Nodarbība apmaksāta no maciņa':'Lesson paid from wallet','Nepietiek līdzekļu — papildini maciņu':'Not enough funds — top up your wallet','Ievadi summu':'Enter an amount','Krievu valoda — drīzumā':'Russian is coming soon'
 };
-const PHRASE=[['↔ arī: ','↔ also: '],['Uzsākšanas vieta:','Start location:'],['Uzsākšanas vieta — ','Start location — '],['adrese nav norādīta iestatījumos','address not set in settings'],['Ielas adrese pilsētā ','Street address in '],['Instruktors ·','Instructor ·'],['Instruktors ','Instructor '],['Personas kods:','Personal code:'],['nolasīts no Smart-ID','read from Smart-ID'],['nodarbības','lessons'],['nodarbība','lesson'],['kategorijas','categories'],['kategorija','category'],[' kat.',' cat.'],['balsojumi','votes'],['atsauksmes','reviews'],['Maciņš:','Wallet:'],['Augšupielādēts','Uploaded'],['plkst.','at'],['Latvijā','Latvia'],['Valodas:','Languages:'],['Manuāls un automāts','Manual & automatic'],['Automāts','Automatic'],['Manuāls','Manual'],
+const PHRASE=[[' · komisija (',' · commission ('],['Braukšanas nodarbības (','Driving lessons ('],[' reizes)',' times)'],[' ar aktīvu līgumu',' with an active contract'],['instruktori: ','instructors: '],['Noslēgts ','Signed '],['Kopā samaksāts:','Total paid:'],['Līgums Nr. ','Contract No. '],['noslēgts ','signed '],['↔ arī: ','↔ also: '],['Uzsākšanas vieta:','Start location:'],['Uzsākšanas vieta — ','Start location — '],['adrese nav norādīta iestatījumos','address not set in settings'],['Ielas adrese pilsētā ','Street address in '],['Instruktors ·','Instructor ·'],['Instruktors ','Instructor '],['Personas kods:','Personal code:'],['nolasīts no Smart-ID','read from Smart-ID'],['nodarbības','lessons'],['nodarbība','lesson'],['kategorijas','categories'],['kategorija','category'],[' kat.',' cat.'],['balsojumi','votes'],['atsauksmes','reviews'],['Maciņš:','Wallet:'],['Augšupielādēts','Uploaded'],['plkst.','at'],['Latvijā','Latvia'],['Valodas:','Languages:'],['Manuāls un automāts','Manual & automatic'],['Automāts','Automatic'],['Manuāls','Manual'],
  ['Pirmdiena','Monday'],['Otrdiena','Tuesday'],['Trešdiena','Wednesday'],['Ceturtdiena','Thursday'],['Piektdiena','Friday'],['Sestdiena','Saturday'],['Svētdiena','Sunday'],
  ['Janvāris','January'],['Februāris','February'],['Marts','March'],['Aprīlis','April'],['Maijs','May'],['Jūnijs','June'],['Jūlijs','July'],['Augusts','August'],['Septembris','September'],['Oktobris','October'],['Novembris','November'],['Decembris','December']];
 const origText=new WeakMap(), origPH=new WeakMap();
